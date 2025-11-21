@@ -108,7 +108,7 @@
 'a_accent_color' => '#60a5fa',    // 主色调
 'a_accent_hover' => '#3b82f6',    // 悬停色
 ```
-<br><br><br>
+<br><br>
 ## 🎯 使用指南
 
 ### 基本搜索
