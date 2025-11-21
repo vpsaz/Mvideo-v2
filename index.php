@@ -1,4 +1,9 @@
 <?php
+/**
+ * @author    校长bloG <1213235865@qq.com>
+ * @github    https://github.com/vpsaz/Mvideo-v2
+ */
+
 header('Content-Type: text/html; charset=utf-8');
 session_start(); 
 $config_file = __DIR__ . '/config/config.php';
