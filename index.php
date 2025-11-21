@@ -471,7 +471,6 @@ function formatDate($dateString)
     <meta name="keywords" content="<?= $conf['site_keywords'] ?>">
     <link rel="shortcut icon" href="https://pic1.imgdb.cn/item/6812e03558cb8da5c8d5d3c3.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="static/css/style.css">
     <script src="https://baiapi.cn/js-lib/Mvideo/hls.min.js"></script>
     <script src="https://baiapi.cn/js-lib/Mvideo/artplayer.min.js"></script>
     <script src="https://baiapi.cn/js-lib/Mvideo/artplayer-plugin-ads.min.js"></script>
