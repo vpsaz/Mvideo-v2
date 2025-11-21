@@ -82,28 +82,6 @@
 - **Session** - 用户会话管理
 - **文件缓存** - 配置和数据处理
 
-### 核心功能模块
-```
-├── 搜索模块 (searchMovies)
-├── 详情获取 (getMovieDetails)
-├── 播放器管理 (ArtPlayer + HLS)
-├── 密码验证系统
-├── 观看记录管理 (localStorage)
-├── 主题管理系统
-└── 响应式布局
-```
-
-## 📁 项目结构
-
-```
-mvideo/
-├── config/
-│   └── config.php              # 配置文件
-├── index.php                  # 主入口文件
-├── README.md                  # 项目说明
-└── 其他资源文件
-```
-
 ## ⚙️ 配置详解
 
 ### 基本配置
