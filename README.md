@@ -99,9 +99,6 @@
 mvideo/
 ├── config/
 │   └── config.php              # 配置文件
-├── static/
-│   └── css/
-│       └── style.css          # 样式文件
 ├── index.php                  # 主入口文件
 ├── README.md                  # 项目说明
 └── 其他资源文件
