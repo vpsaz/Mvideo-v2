@@ -821,7 +821,7 @@ function formatDate($dateString)
         .video-player video {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
         }
         
         .player-controls {
