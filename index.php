@@ -563,6 +563,7 @@ function formatDate($dateString)
             height: 44px;
             box-sizing: border-box;
             line-height: 44px;
+            min-height: 44px;
         }
         
         .search-input:focus {
