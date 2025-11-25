@@ -39,7 +39,7 @@
    ```
 
 2. **配置设置**
-   - 复制 #config/config.php# 文件并根据需要修改配置
+   - 复制 `config/config.php` 文件并根据需要修改配置
    - 配置数据库连接（如果需要）
    - 设置密码保护相关参数
 
@@ -63,7 +63,7 @@
 
 4. **部署访问**
    - 将项目文件上传到 Web 服务器
-   - 确保 #config/# 目录有写入权限
+   - 确保 `config/` 目录有写入权限
    - 通过浏览器访问项目首页
 <br><br><br>
 ## 🛠 技术架构
@@ -135,13 +135,13 @@
 ## 🔧 开发说明
 
 ### 自定义开发
-- 修改 #config/config.php# 文件进行个性化配置
+- 修改 `config/config.php` 文件进行个性化配置
 - 编辑 CSS 变量来自定义主题颜色
 - 添加新的源站需要更新 #source_count# 配置
 
 ### API 集成
 项目默认集成了第三方影视 API，如需更换 API 源：
-1. 修改 #searchMovies()# 和 #getMovieDetails()# 函数
+1. 修改 `searchMovies()` 和 `getMovieDetails()` 函数
 2. 更新 API 端点地址和参数格式
 3. 调整数据解析逻辑
 
