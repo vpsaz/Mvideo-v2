@@ -2038,8 +2038,22 @@ function formatDate($dateString)
             add(videoInfo) {
                 try {
                     let history = this.getAll();
-                    history = history.filter(item => item.vod_id !== videoInfo.vod_id);
-                    history.unshift(videoInfo);
+                    
+                    const existingIndex = history.findIndex(item => item.vod_id === videoInfo.vod_id);
+                    
+                    if (existingIndex >= 0) {
+                        history[existingIndex] = {
+                            ...history[existingIndex],
+                            ...videoInfo,
+                            watch_time: Date.now()
+                        };
+                    } else {
+                        history.unshift({
+                            ...videoInfo,
+                            watch_time: Date.now()
+                        });
+                    }
+                    
                     history = history.slice(0, this.MAX_RECORDS);
                     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
                     return true;
@@ -2084,8 +2098,48 @@ function formatDate($dateString)
                 if (days < 7) return `${days}天前`;
         
                 return new Date(timestamp).toLocaleDateString();
+            },
+        
+            getVideoHistory(vodId) {
+                const history = this.getAll();
+                return history.find(item => item.vod_id === vodId);
             }
         };
+        
+        function restoreFromHistory() {
+            if (!window.currentVideoInfo || !episodes || episodes.length === 0) {
+                console.log('恢复条件不满足');
+                return null;
+            }
+            
+            const videoHistory = WatchHistory.getVideoHistory(window.currentVideoInfo.vod_id);
+            if (!videoHistory) {
+                console.log('未找到观看记录');
+                return null;
+            }
+            
+            console.log('从观看记录恢复:', videoHistory);
+            
+            if (videoHistory.current_episode_index !== undefined && 
+                videoHistory.current_episode_index >= 0 && 
+                videoHistory.current_episode_index < episodes.length) {
+                console.log(`从索引恢复: 第${videoHistory.current_episode_index + 1}集`);
+                return videoHistory.current_episode_index;
+            }
+            
+            if (videoHistory.current_episode) {
+                const historyEpisodeIndex = episodes.findIndex(ep => 
+                    ep.title === videoHistory.current_episode
+                );
+                if (historyEpisodeIndex >= 0) {
+                    console.log(`从标题恢复: 第${historyEpisodeIndex + 1}集`);
+                    return historyEpisodeIndex;
+                }
+            }
+            
+            console.log('无法从记录恢复，使用默认第一集');
+            return null;
+        }
         
         function renderWatchHistory() {
             const historyList = document.getElementById('historyList');
@@ -2134,6 +2188,20 @@ function formatDate($dateString)
         let currentIndex = 0;
         let currentRequestController = null;
         let apiKeyConfigured = window.apiKeyConfigured || false;
+        let isSwitchingEpisode = false;
+        
+        setInterval(() => {
+            if (isSwitchingEpisode) {
+                console.warn('状态锁已锁定超过5秒，强制重置');
+                isSwitchingEpisode = false;
+            }
+        }, 5000);
+        
+        window.resetSwitchLock = function() {
+            console.log('手动重置切换状态锁');
+            isSwitchingEpisode = false;
+            console.log('当前状态锁:', isSwitchingEpisode);
+        };
         
         function playM3u8(video, url, art) {
             console.log('使用HLS播放m3u8:', url);
@@ -2254,6 +2322,80 @@ function formatDate($dateString)
         
             console.log('从DOM读取的剧集数据:', arr);
             return arr;
+        }
+        
+        function initAutoNext() {
+            if (!art) return;
+            
+            art.off('video:ended');
+            
+            art.on('video:ended', () => {
+                console.log('视频结束事件触发，当前索引:', currentIndex, '总集数:', episodes.length);
+                
+                if (currentIndex >= episodes.length - 1) {
+                    console.log('已经是最后一集，不自动切换');
+                    return;
+                }
+                
+                console.log('视频播放结束，自动切换到下一集');
+                switchToNextEpisode(currentIndex + 1);
+            });
+        }
+        
+        function switchToNextEpisode(nextIndex) {
+            console.log('=== 切换下一集调试 ===');
+            console.log('当前索引:', currentIndex, '目标索引:', nextIndex);
+            console.log('切换前状态锁:', isSwitchingEpisode);
+            
+            if (isSwitchingEpisode) {
+                console.log('切换被阻止: 正在切换中');
+                return;
+            }
+            
+            if (!episodes || nextIndex >= episodes.length) {
+                console.log('切换被阻止: 剧集不存在或已是最后一集');
+                return;
+            }
+            
+            isSwitchingEpisode = true;
+            console.log('开始切换到下一集:', nextIndex);
+            
+            const nextEpisode = episodes[nextIndex];
+            
+            const volume = art ? art.volume : 0.7;
+            const wasFullscreen = art ? art.fullscreen : false;
+            
+            if (art) {
+                art.notice.show = `正在切换到 ${nextEpisode.title}`;
+            }
+            
+            if (window.currentVideoInfo && episodes && episodes[nextIndex]) {
+                const nextEpisodeInfo = {
+                    vod_id: window.currentVideoInfo.vod_id,
+                    vod_name: window.currentVideoInfo.vod_name,
+                    vod_pic: window.currentVideoInfo.vod_pic,
+                    source: window.currentVideoInfo.source,
+                    current_episode: nextEpisode.title,
+                    current_episode_index: nextIndex,
+                    watch_time: Date.now()
+                };
+                WatchHistory.add(nextEpisodeInfo);
+            }
+            
+            setTimeout(() => {
+                try {
+                    if (art) {
+                        art.destroy();
+                    }
+                } catch (e) {
+                    console.warn('销毁播放器时出错:', e);
+                }
+                
+                art = null;
+                
+                createArtplayerForEpisode(nextIndex);
+                
+            }, 500);
         }
         
         function scrollEpisodeIntoView(idx) {
@@ -2417,8 +2559,15 @@ function formatDate($dateString)
             enhancedRetry();
         
             if (episodes && episodes.length > 0) {
-                console.log(`找到 ${episodes.length} 个剧集，准备播放第一集`);
-                createArtplayerForEpisode(0);
+                console.log(`找到 ${episodes.length} 个剧集，准备播放`);
+                
+                const historyIndex = restoreFromHistory();
+                const startIndex = historyIndex !== null ? historyIndex : 0;
+                
+                console.log(`从第 ${startIndex + 1} 集开始播放`, 
+                    historyIndex !== null ? '(从观看记录恢复)' : '(默认从第一集开始)');
+                
+                createArtplayerForEpisode(startIndex);
             } else {
                 console.error('未找到可播放的剧集');
                 showError('未找到可播放的剧集，请返回搜索页面重新搜索');
