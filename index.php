@@ -158,6 +158,9 @@ if (!empty($details)) {
                     min-height: 100vh;
                     margin: 0;
                     line-height: 1.6;
+                    background-image: url(), url(https://pic1.imgdb.cn/item/6812a7ae58cb8da5c8d5cbab.png);
+                    background-position: right bottom, left top;
+                    background-repeat: no-repeat, repeat;
                 }
                 
                 .password-container {
