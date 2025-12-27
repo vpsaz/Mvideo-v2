@@ -34,7 +34,7 @@
 
 1. **下载项目**
    ```bash
-   git clone [https://github.com/your-username/mvideo.git](https://github.com/vpsaz/Mvideo-v2.git)
+   git clone https://github.com/your-username/mvideo.git
    cd mvideo
    ```
 
