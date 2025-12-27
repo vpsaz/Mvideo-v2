@@ -426,7 +426,6 @@ if (!isset($_SESSION['admin_logged_in'])) {
             });
         });
         
-        // 自动移除提示框
         setTimeout(() => {
             const toast = document.querySelector('.toast');
             if (toast) {
