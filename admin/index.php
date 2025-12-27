@@ -1,7 +1,7 @@
 <?php
 /**
  * @author    校长bloG <1213235865@qq.com>
- * @github    https://github.com/vpsaz/Mvideo-v2
+ * @github    https://github.com/vpsaz/Mvideo
  */
 
 session_start();
@@ -48,8 +48,14 @@ if (isset($_POST['save']) && isset($_SESSION['admin_logged_in'])) {
     $export .= ");\n?>";
     
     file_put_contents($config_file, $export);
-    $message = '配置已保存！';
+    
+    $_SESSION['save_message'] = '配置已保存！';
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
 }
+
+$message = isset($_SESSION['save_message']) ? $_SESSION['save_message'] : '';
+unset($_SESSION['save_message']);
 
 if (!isset($_SESSION['admin_logged_in'])) {
 ?>
@@ -59,6 +65,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
     <meta charset="UTF-8">
     <title>登录</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="https://pic1.imgdb.cn/item/6812e03558cb8da5c8d5d3c3.png" type="image/x-icon">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .gradient-bg {
@@ -91,18 +98,67 @@ if (!isset($_SESSION['admin_logged_in'])) {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
         }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 3s forwards;
+        }
+        
+        .toast-error {
+            background-color: #ef4444;
+        }
+        
+        .toast-success {
+            background-color: #10b981;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <?php if (isset($error)): ?>
+    <div class="toast toast-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <?php echo htmlspecialchars($error); ?>
+    </div>
+    <?php endif; ?>
+    
     <div class="login-card p-8 w-full max-w-md">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-800 mb-2">欢迎回来</h1>
             <p class="text-gray-600">请输入密码登录管理系统</p>
-        </div> <?php if (isset($error)): ?> <div class="mb-6 p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-            </svg> <?php echo htmlspecialchars($error); ?>
-        </div> <?php endif; ?> <form method="post" class="space-y-6">
+        </div>
+        
+        <form method="post" class="space-y-6">
             <div>
                 <div class="relative">
                     <input type="password" name="password" placeholder="请输入密码" class="input-field w-full px-5 py-3 rounded-lg text-gray-700 focus:outline-none">
@@ -115,7 +171,8 @@ if (!isset($_SESSION['admin_logged_in'])) {
         </form>
     </div>
 </body>
-</html> <?php
+</html>
+<?php
     exit;
 }
 ?>
@@ -125,8 +182,9 @@ if (!isset($_SESSION['admin_logged_in'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $conf['site_title']; ?> - 后台</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="shortcut icon" href="https://pic1.imgdb.cn/item/6812e03558cb8da5c8d5d3c3.png" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --primary: #3b82f6;
@@ -175,13 +233,57 @@ if (!isset($_SESSION['admin_logged_in'])) {
             border-radius: 4px;
             border: 1px solid #e2e8f0;
         }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 3s forwards;
+        }
+        
+        .toast-success {
+            background-color: #10b981;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body class="font-sans">
+    <?php if (!empty($message)): ?>
+    <div class="toast toast-success">
+        <i class="fas fa-check-circle mr-3"></i>
+        <?php echo htmlspecialchars($message); ?>
+    </div>
+    <?php endif; ?>
+    
     <div class="min-h-screen flex flex-col">
-        <main class="flex-1 p-6"> <?php if (isset($message)): ?> <div class="mb-6 p-4 bg-green-50 text-green-700 rounded-lg border border-green-200 flex items-center">
-                <i class="fas fa-check-circle mr-3 text-green-500"></i> <?php echo htmlspecialchars($message); ?>
-            </div> <?php endif; ?> <div class="card p-6 mb-6">
+        <main class="flex-1 p-6">
+            <div class="card p-6 mb-6">
                 <h3 class="text-lg font-semibold mb-4 flex items-center"><i class="fas fa-cog mr-2 text-blue-500"></i>系统设置</h3>
                 <form method="post" class="space-y-5">
 
@@ -323,6 +425,14 @@ if (!isset($_SESSION['admin_logged_in'])) {
                 colorInput.value = textInput.value;
             });
         });
+        
+        // 自动移除提示框
+        setTimeout(() => {
+            const toast = document.querySelector('.toast');
+            if (toast) {
+                toast.remove();
+            }
+        }, 3500);
     </script>
 </body>
 </html>
