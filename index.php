@@ -79,12 +79,6 @@ function getInitialTheme()
     if (isset($_COOKIE['theme_preference'])) {
         return $_COOKIE['theme_preference'] === 'dark' ? 'dark' : 'light';
     }
-    if (isset($_SERVER['HTTP_ACCEPT'])) {
-        $accept = $_SERVER['HTTP_ACCEPT'];
-        if (strpos($accept, 'prefers-color-scheme: dark') !== false) {
-            return 'dark';
-        }
-    }
     return 'light';
 }
 
@@ -1857,6 +1851,17 @@ function formatDate($dateString)
     </style>
 </head>
 <body>
+    <div id="dailyNoticeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); max-width: 500px; width: 90%; padding: 25px; border: 1px solid var(--border-color); position: relative;">
+            <h3 style="font-size: 20px; margin-bottom: 15px; color: var(--accent-color); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-bullhorn"></i> 每日必看
+            </h3>
+            <div style="margin-bottom: 20px; line-height: 1.6; color: var(--text-color);"><?= $conf['disclaimers'] ?></div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="closeNoticeBtn" style="background: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; opacity: 0.5; pointer-events: none; transition: all 0.2s;"> 关闭 (<span id="countdown">5</span>s) </button>
+            </div>
+        </div>
+    </div>
     <nav class="main-nav">
         <div class="nav-container">
             <a href="./" class="nav-brand">
@@ -1864,7 +1869,8 @@ function formatDate($dateString)
             </a>
             <div class="nav-menu" id="navMenu">
                 <a href="./" class="nav-link <?= !$isHistoryPage ? 'active' : '' ?>">首页</a>
-                <a href="?page=history" class="nav-link <?= $isHistoryPage ? 'active' : '' ?>">观看记录</a> <?php if ($passwordVerified): ?> <a href="?logout=1" class="nav-link"><i class="fas fa-sign-out-alt"></i> 退出验证</a> <?php endif; ?>
+                <a href="?page=history" class="nav-link <?= $isHistoryPage ? 'active' : '' ?>">观看记录</a>
+                <a href="javascript:void(0)" class="nav-link" id="customPlayBtn">自定义播放</a> <?php if ($passwordVerified): ?> <a href="?logout=1" class="nav-link"><i class="fas fa-sign-out-alt"></i> 退出验证</a> <?php endif; ?>
             </div>
             <div class="nav-actions">
                 <button class="theme-toggle-nav" id="themeToggle">
@@ -1876,6 +1882,21 @@ function formatDate($dateString)
             </div>
         </div>
     </nav>
+    <div id="customPlayModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); max-width: 500px; width: 90%; padding: 25px; border: 1px solid var(--border-color); position: relative;">
+            <button id="closeCustomModal"
+                style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; border-radius: 6px; z-index: 10;">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 style="font-size: 20px; margin-bottom: 20px; color: var(--text-color); display: flex; align-items: center; gap: 10px; padding-right: 40px;">
+                <i class="fas fa-play-circle"></i> 自定义
+            </h3>
+            <div style="display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap;">
+                <input type="text" id="customPlayUrl" placeholder="请输入视频播放地址（支持m3u8/mp4等）" class="search-input" style="flex: 1;">
+                <button id="submitCustomPlay" class="search-btn" style="flex-shrink: 0;">播放</button>
+            </div>
+        </div>
+    </div>
     <div class="container"> <?php if ($isHistoryPage): ?> <div class="results-section">
             <div class="results-header">
                 <h3 class="results-title">观看记录</h3>
@@ -1992,7 +2013,8 @@ function formatDate($dateString)
             console.log('PHP生成的剧集数据:', window.episodesData);
             window.apiKeyConfigured = <?php echo $apiKeyConfigured ? 'true' : 'false'; ?>;
             console.log('API Key 配置状态:', window.apiKeyConfigured);
-        </script><script src="https://baiapi.cn/js-lib/Mvideo_v2/SharedViewing.js"></script> <?php endif; ?> <?php else: ?> <div class="empty-state">
+        </script>
+        <script src="https://baiapi.cn/js-lib/Mvideo_v2/SharedViewing.js"></script> <?php endif; ?> <?php else: ?> <div class="empty-state">
             <i class="fas fa-exclamation-circle"></i>
             <p>无法加载影片详情</p>
             <a href="?" class="back-btn" style="margin-top: 20px;">
@@ -2007,7 +2029,7 @@ function formatDate($dateString)
                             <b><a href="./"><span class="brand-accent">M</span>video</a></b>
                         </h3>
                         <p class="footer-desc">
-                            <a href="" title="<?= $conf['disclaimers'] ?>">
+                            <a href="" title="让找片更简单，把时间留给精彩内容">
                                 <b>让找片更简单，把时间留给精彩内容</b>
                             </a>
                         </p>
@@ -2023,6 +2045,59 @@ function formatDate($dateString)
             </div>
         </footer>
     </div>
+    <script>
+        (function() {
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = document.getElementById('dailyNoticeModal');
+                const closeBtn = document.getElementById('closeNoticeBtn');
+                const countdownEl = document.getElementById('countdown');
+                
+                if (!modal || !closeBtn || !countdownEl) {
+                    console.log('公告弹窗元素未找到');
+                    return;
+                }
+                
+                function checkShowNotice() {
+                    const today = new Date().toISOString().split('T')[0];
+                    const closedDate = localStorage.getItem('dailyNoticeClosed');
+                    
+                    if (closedDate === today) return false;
+                    
+                    modal.style.display = 'flex';
+                    return true;
+                }
+                
+                function startCountdown() {
+                    let seconds = 5;
+                    countdownEl.textContent = seconds;
+                    
+                    const timer = setInterval(() => {
+                        seconds--;
+                        countdownEl.textContent = seconds;
+                        
+                        if (seconds <= 0) {
+                            clearInterval(timer);
+                            closeBtn.style.opacity = '1';
+                            closeBtn.style.pointerEvents = 'auto';
+                            closeBtn.innerHTML = '关闭';
+                        }
+                    }, 1000);
+                }
+                
+                function closeNotice() {
+                    const today = new Date().toISOString().split('T')[0];
+                    localStorage.setItem('dailyNoticeClosed', today);
+                    modal.style.display = 'none';
+                }
+                
+                if (checkShowNotice()) {
+                    startCountdown();
+                }
+                
+                closeBtn.addEventListener('click', closeNotice);
+            });
+        })();
+    </script>
     <script>
         const WatchHistory = {
             STORAGE_KEY: 'video_watch_history',
@@ -2277,18 +2352,19 @@ function formatDate($dateString)
             if (errorMessage) errorMessage.style.display = 'none';
         
             if (art) {
-                try {
-                    art.off('ready');
-                    art.off('play');
-                    art.off('pause');
-                    art.off('error');
-                    if (typeof art.destroy === 'function') {
-                        art.destroy(false);
-                    }
-                } catch (e) {
-                    console.warn('销毁旧播放器时出错:', e);
-                }
-                art = null;
+        try {
+            art.off('ready');
+            art.off('play');
+            art.off('pause');
+            art.off('error');
+            art.off('video:ended');
+            if (typeof art.destroy === 'function') {
+                art.destroy(false);
+            }
+        } catch (e) {
+            console.warn('销毁旧播放器时出错:', e);
+        }
+        art = null;
             }
         
             console.log('播放器界面已重置');
@@ -2296,35 +2372,12 @@ function formatDate($dateString)
         
         function readEpisodesFromDOM() {
             if (window.episodesData && window.episodesData.length > 0) {
-                console.log('使用PHP生成的剧集数据，数量:', window.episodesData.length);
-                return window.episodesData;
+        console.log('使用PHP生成的剧集数据，数量:', window.episodesData.length);
+        return window.episodesData;
             }
-        
-            console.log('PHP数据未找到，从DOM读取剧集数据');
-            const nodes = document.querySelectorAll('.episode-item');
-            const arr = [];
-        
-            nodes.forEach((node, idx) => {
-                try {
-                    let title = node.querySelector('.episode-title') ?
-                        node.querySelector('.episode-title').textContent.trim() :
-                        `第${idx+1}集`;
-        
-                    let url = '';
-        
-                    arr.push({
-                        url: url,
-                        title: title,
-                        index: idx
-                    });
-        
-                } catch (e) {
-                    console.error('解析剧集数据出错:', e);
-                }
-            });
-        
-            console.log('从DOM读取的剧集数据:', arr);
-            return arr;
+            
+            console.error('未找到剧集数据');
+            return [];
         }
         
         function initAutoNext() {
@@ -2583,6 +2636,78 @@ function formatDate($dateString)
             document.getElementById('y-day').textContent =
                 Math.floor((new Date() - new Date('<?= $conf['y-day'] ?>')) / 86400000);
         })();
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const [customPlayBtn, customPlayModal, closeCustomModal, submitCustomPlay, customPlayUrl] = [
+        'customPlayBtn', 'customPlayModal', 'closeCustomModal', 'submitCustomPlay', 'customPlayUrl'
+            ].map(id => document.getElementById(id));
+        
+            if (!customPlayBtn || !customPlayModal) {
+        console.error('自定义播放功能：核心元素未找到！');
+        return;
+            }
+        
+            customPlayBtn.addEventListener('click', () => {
+        customPlayModal.style.display = 'flex';
+        customPlayUrl?.focus();
+            });
+        
+            const closeModal = () => {
+        customPlayModal.style.display = 'none';
+        customPlayUrl.value = '';
+            };
+        
+            if (closeCustomModal) {
+        closeCustomModal.addEventListener('click', closeModal);
+        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
+        const hoverColor = getComputedStyle(document.documentElement).getPropertyValue('--hover-color');
+        const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color');
+        
+        closeCustomModal.addEventListener('mouseover', () => {
+            closeCustomModal.style.color = accentColor;
+            closeCustomModal.style.background = hoverColor;
+        });
+        closeCustomModal.addEventListener('mouseout', () => {
+            closeCustomModal.style.color = textColor;
+            closeCustomModal.style.background = 'transparent';
+        });
+            }
+        
+            if (submitCustomPlay && customPlayUrl) {
+        const isValidUrl = (url) => {
+            try {
+                const parsedUrl = new URL(url);
+                return ['http:', 'https:'].includes(parsedUrl.protocol);
+            } catch (e) {
+                return false;
+            }
+        };
+        
+        const isValidVideoFormat = (url) => /\.(m3u8|mp4)(\?.*)?$/i.test(url);
+        
+        submitCustomPlay.addEventListener('click', () => {
+            const url = customPlayUrl.value.trim();
+            
+            if (!url) return alert('请输入有效的视频播放地址！'), customPlayUrl.focus();
+            if (!isValidUrl(url)) return alert('请输入有效的HTTP/HTTPS链接！'), customPlayUrl.focus(), customPlayUrl.select();
+            if (!isValidVideoFormat(url)) return alert('仅支持M3U8或MP4格式的视频链接！'), customPlayUrl.focus(), customPlayUrl.select();
+        
+            const targetUrl = `./api-player.php?url=${encodeURIComponent(url)}`;
+            window.open(targetUrl, '_blank');
+            closeModal();
+        });
+        
+        const accentHover = getComputedStyle(document.documentElement).getPropertyValue('--accent-hover');
+        const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color');
+        submitCustomPlay.addEventListener('mouseover', () => submitCustomPlay.style.background = accentHover);
+        submitCustomPlay.addEventListener('mouseout', () => submitCustomPlay.style.background = accentColor);
+        
+        customPlayUrl.addEventListener('keydown', (e) => e.key === 'Enter' && submitCustomPlay.click());
+            }
+        
+            document.addEventListener('keydown', (e) => e.key === 'Escape' && customPlayModal.style.display === 'flex' && closeModal());
+        });
+        
     </script>
 </body>
 </html>
