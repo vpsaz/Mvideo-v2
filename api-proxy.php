@@ -7,40 +7,61 @@
 $config_file = __DIR__ . '/config/config.php';
 $conf = include($config_file);
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
-class DomainValidator {
-    public static function validate() {
-        if (!isset($_SERVER['HTTP_REFERER']) || empty($_SERVER['HTTP_REFERER'])) {
-            return false;
-        }
-        
-        $referer = parse_url($_SERVER['HTTP_REFERER']);
-        $currentHost = $_SERVER['HTTP_HOST'];
-        $refererHost = $referer['host'] ?? '';
-        
-        if (isset($referer['port'])) {
-            $refererHost .= ':' . $referer['port'];
-        }
-        
-        return $currentHost === $refererHost;
+$currentDomain = $_SERVER['HTTP_HOST'] ?? '';
+$isAllowed = false;
+
+if (!empty($_SERVER['HTTP_ORIGIN'])) {
+    $origin = parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST);
+    if ($origin === $currentDomain) {
+        $isAllowed = true;
+        header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+        header('Access-Control-Allow-Methods: POST, GET');
+        header('Access-Control-Allow-Credentials: true');
     }
-    
-    public static function getErrorResponse() {
-        return [
-            'code' => 403,
-            'error' => '请求无效'
-        ];
+} elseif (!empty($_SERVER['HTTP_REFERER'])) {
+    $refererHost = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
+    if ($refererHost === $currentDomain) {
+        $isAllowed = true;
     }
 }
 
-if (!DomainValidator::validate()) {
-    header('HTTP/1.1 403 Forbidden');
-    echo json_encode(DomainValidator::getErrorResponse(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+if (!$isAllowed) {
+    $redirectUrl = './'; 
+    header("Location: {$redirectUrl}");
     exit;
 }
 
-header('Access-Control-Allow-Origin: https://' . $_SERVER['HTTP_HOST']);
+$url = $_POST['url'] ?? $_GET['url'] ?? '';
+
+if (empty($url)) {
+    echo json_encode(['code' => 404, 'msg' => "请输入URL"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$decoded_url = urldecode($url);
+
+if (!preg_match('/^https?:\/\//i', $decoded_url)) {
+    echo json_encode(['code' => 404, 'msg' => "请输入正确的URL"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$video_extensions = ['m3u8', 'mp4', 'm3u'];
+$path = parse_url($decoded_url, PHP_URL_PATH);
+$has_video_extension = false;
+
+if ($path) {
+    $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $has_video_extension = in_array($extension, $video_extensions);
+}
+
+if (!$has_video_extension) {
+    echo json_encode(['code' => 404, 'msg' => "仅支持m3u8和mp4格式"], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$safe_url = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
 
 class M3U8Parser {
     private $config;
@@ -184,14 +205,8 @@ class M3U8Parser {
     }
 }
 
-$url = $_GET['url'] ?? '';
-if (empty($url)) {
-    echo json_encode(['code' => 400, 'error' => '请求无效'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    exit;
-}
-
 $parser = new M3U8Parser($conf, 3, 1);
-$result = $parser->parse($url);
+$result = $parser->parse($decoded_url);
 
 echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 ?>
