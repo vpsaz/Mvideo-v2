@@ -126,7 +126,7 @@ class M3U8Parser {
             'apikey' => $this->config['baiapi_key']
         ];
 
-        $apiUrl = 'https://baiapi.cn/api/m3u8gl?' . http_build_query($apiParams);
+        $apiUrl = 'https://baiapi.cn/api/m3u8af?' . http_build_query($apiParams);
 
         $ch = curl_init();
         curl_setopt_array($ch, [
