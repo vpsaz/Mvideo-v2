@@ -4,8 +4,6 @@
  * @github    https://github.com/vpsaz/Mvideo-v2
  */
 
-$api = 'https://baiapi.cn/api/m3u8af';
-
 $config_file = __DIR__ . '/config/config.php';
 $conf = include($config_file);
 
@@ -128,7 +126,7 @@ class M3U8Parser {
             'apikey' => $this->config['baiapi_key']
         ];
 
-        $apiUrl = $api . '?' . http_build_query($apiParams);
+        $apiUrl = 'https://baiapi.cn/api/m3u8af?' . http_build_query($apiParams);
 
         $ch = curl_init();
         curl_setopt_array($ch, [

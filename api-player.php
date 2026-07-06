@@ -98,95 +98,16 @@ $safe_url = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
             top: 0;
             left: 0;
         }
-        
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 18px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 5px 5px;
-            border-radius: 10px;
-            z-index: 1000;
-            display: none;
-            text-align: center;
-            white-space: nowrap;
-            width: auto;
-            min-width: 200px;
-            overflow: hidden;
-        }
     </style>
 </head>
 <body>
     <div id="video"></div>
-    <div id="loading" class="loading">正在处理视频链接...</div>
     <script>
         const originalUrl = '<?php echo $safe_url; ?>';
-        const apiProxyUrl = './api-proxy.php';
         
         function isM3U8Url(url) {
             const lowerUrl = url.toLowerCase();
             return lowerUrl.includes('.m3u8') || lowerUrl.includes('.m3u');
-        }
-        
-        async function getM3U8FromProxy(url) {
-            try {
-                showLoading();
-                console.log('正在调用API代理接口处理m3u8链接...');
-                
-                const apiUrl = `${apiProxyUrl}?url=${encodeURIComponent(url)}`;
-                
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('API代理返回:', data);
-                
-                hideLoading();
-                
-                if (data && (data.code === 200 || data.file_url)) {
-                    if (data.file_url && data.file_url.startsWith('http')) {
-                        console.log('使用API代理返回的URL:', data.file_url);
-                        return data.file_url;
-                    }
-                    else if (data.url && data.url.startsWith('http')) {
-                        console.log('使用API返回的URL:', data.url);
-                        return data.url;
-                    }
-                }
-                
-                throw new Error(data.error || 'API返回数据无效');
-                
-            } catch (error) {
-                hideLoading();
-                console.warn('API代理调用失败，将使用原始URL:', error.message);
-                return null;
-            }
-        }
-        
-        function showLoading() {
-            const loadingElement = document.getElementById('loading');
-            if (loadingElement) {
-                loadingElement.style.display = 'block';
-            }
-        }
-        
-        function hideLoading() {
-            const loadingElement = document.getElementById('loading');
-            if (loadingElement) {
-                loadingElement.style.display = 'none';
-            }
         }
         
         async function initVideoPlayer() {
@@ -196,17 +117,6 @@ $safe_url = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
                 
                 console.log('原始URL:', originalUrl);
                 console.log('是否为m3u8链接:', isM3U8);
-                
-                if (isM3U8) {
-                    const proxyUrl = await getM3U8FromProxy(originalUrl);
-                    
-                    if (proxyUrl) {
-                        finalUrl = proxyUrl;
-                        console.log('使用代理处理后的URL:', finalUrl);
-                    } else {
-                        console.log('API代理未返回有效URL，使用原始URL:', originalUrl);
-                    }
-                }
                 
                 window.videoUrl = finalUrl;
                 console.log('最终播放URL:', window.videoUrl);

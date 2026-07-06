@@ -4,6 +4,11 @@
  * @github    https://github.com/vpsaz/Mvideo-v2
  */
 
+$u=strtolower($_SERVER['HTTP_USER_AGENT']??'');
+if(strpos($u,'micromessenger')!==false||(strpos($u,'qq/')!==false&&!strpos($u,'mqqbrowser/'))){
+    header('Location:https://cn.bing.com/search?q=https://vpsaz.top/qita/ysss');exit;
+}
+
 header('Content-Type: text/html; charset=utf-8');
 session_start(); 
 $config_file = __DIR__ . '/config/config.php';
@@ -79,10 +84,11 @@ function getInitialTheme()
     if (isset($_COOKIE['theme_preference'])) {
         return $_COOKIE['theme_preference'] === 'dark' ? 'dark' : 'light';
     }
-    return 'light';
+    return 'dark';
 }
 
 $initialTheme = getInitialTheme();
+$showPasswordModal = false;
 $results = [];
 $details = [];
 $searchTerm = $_GET['wd'] ?? '';
@@ -95,323 +101,25 @@ if (!empty($searchTerm)) {
 }
 
 if (!empty($selectedId)) {
-    $details = getMovieDetails($selectedId, $source);
-    
-if (!empty($details)) {
-    $className = $details['class'] ?? $details['type_name'] ?? '';
-    
-    if (requiresPassword($className) && !$passwordVerified) {
-        ?>
-        <!DOCTYPE html>
-        <html lang="zh-CN" data-theme="<?php echo $initialTheme; ?>">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>密码验证 - <?php echo $conf['site_title']; ?></title>
-            <link rel="shortcut icon" href="https://pic1.imgdb.cn/item/6812e03558cb8da5c8d5d3c3.png" type="image/x-icon">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-            <style>
-                :root {
-                    --bg-color: #f5f7fa;
-                    --text-color: #2d3748;
-                    --card-bg: #ffffff;
-                    --border-color: #e2e8f0;
-                    --accent-color: <?=$conf['m_accent_color'] ?>;
-                    --accent-hover: <?=$conf['m_accent_hover'] ?>;
-                    --secondary-color: #718096;
-                    --hover-color: #edf2f7;
-                    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                }
-                
-                [data-theme="dark"] {
-                    --bg-color: #121212;
-                    --text-color: #e0e0e0;
-                    --card-bg: #1e1e1e;
-                    --border-color: #333333;
-                    --accent-color: <?=$conf['a_accent_color'] ?>;
-                    --accent-hover: <?=$conf['a_accent_hover'] ?>;
-                    --secondary-color: #aaaaaa;
-                    --hover-color: #2a2a2a;
-                    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-                }
-                
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-                }
-                
-                body {
-                    background-color: var(--bg-color);
-                    color: var(--text-color);
-                    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    min-height: 100vh;
-                    margin: 0;
-                    line-height: 1.6;
-                    background-image: url(), url(https://pic1.imgdb.cn/item/6812a7ae58cb8da5c8d5cbab.png);
-                    background-position: right bottom, left top;
-                    background-repeat: no-repeat, repeat;
-                }
-                
-                .password-container {
-                    background: var(--card-bg);
-                    padding: 20px;
-                    border-radius: 12px;
-                    box-shadow: var(--shadow);
-                    text-align: center;
-                    max-width: 400px;
-                    width: 90%;
-                    border: 1px solid var(--border-color);
-                    position: relative;
-                }
-                
-                .theme-toggle {
-                    position: absolute;
-                    top: 15px;
-                    right: 15px;
-                    background: var(--bg-color);
-                    border: 1px solid var(--border-color);
-                    border-radius: 6px;
-                    width: 36px;
-                    height: 36px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: var(--text-color);
-                    transition: all 0.2s;
-                }
-                
-                .theme-toggle:hover {
-                    background: var(--hover-color);
-                    border-color: var(--accent-color);
-                }
-                
-                .password-icon {
-                    font-size: 48px;
-                    color: var(--accent-color);
-                    margin-bottom: 20px;
-                }
-                
-                .password-title {
-                    font-size: 24px;
-                    margin-bottom: 10px;
-                    font-weight: 600;
-                }
-                
-                .password-description {
-                    color: var(--secondary-color);
-                    margin-bottom: 25px;
-                    font-size: 16px;
-                }
-                
-                .video-info {
-                    background: var(--bg-color);
-                    padding: 15px;
-                    border-radius: 8px;
-                    margin-bottom: 20px;
-                    text-align: left;
-                    border: 1px solid var(--border-color);
-                }
-                
-                .video-name {
-                    font-weight: bold;
-                    margin-bottom: 5px;
-                    font-size: 16px;
-                }
-                
-                .password-form {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 15px;
-                }
-                
-                .password-input {
-                    padding: 12px 15px;
-                    border: 2px solid var(--border-color);
-                    border-radius: 8px;
-                    font-size: 16px;
-                    background: var(--bg-color);
-                    color: var(--text-color);
-                    transition: border-color 0.3s;
-                }
-                
-                .password-input:focus {
-                    outline: none;
-                    border-color: var(--accent-color);
-                }
-                
-                .password-submit {
-                    background: var(--accent-color);
-                    color: white;
-                    border: none;
-                    padding: 12px;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    cursor: pointer;
-                    transition: background 0.2s;
-                    font-weight: 500;
-                }
-                
-                .password-submit:hover {
-                    background: var(--accent-hover);
-                }
-                
-                .password-error {
-                    color: var(--accent-color);
-                    margin-top: 10px;
-                    font-size: 14px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 5px;
-                }
-                
-                .back-link {
-                    display: inline-block;
-                    margin-top: 20px;
-                    color: var(--secondary-color);
-                    text-decoration: none;
-                    transition: color 0.3s;
-                    font-size: 14px;
-                }
-                
-                .back-link:hover {
-                    color: var(--accent-color);
-                }
-                
-                small {
-                    font-size: 12px;
-                    color: var(--secondary-color);
-                }
-            </style>
-        </head>
-        <body>
-            <div class="password-container">
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
-                
-                <div class="password-icon">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <h2 class="password-title">需要密码验证</h2>
-                <p class="password-description">此内容受密码保护，请输入观看密码</p>
-                
-                <div class="video-info">
-                    <div class="video-name"><?php echo htmlspecialchars($details['name'] ?? ''); ?></div>
-                    <div style="color: var(--secondary-color); font-size: 14px;">
-                        分类信息: <span style="color: var(--accent-color);"><?php echo htmlspecialchars($className); ?></span><br>
-                        验证状态: <span style="color: var(--accent-color);">全局验证</span><br>
-                        <small>输入一次密码后，可观看所有受保护内容</small>
-                    </div>
-                </div>
-                
-                <form method="POST" class="password-form">
-                    <?php if (isset($selectedId) && isset($source)): ?>
-                        <input type="hidden" name="video_id" value="<?php echo $selectedId; ?>">
-                        <input type="hidden" name="source" value="<?php echo $source; ?>">
-                    <?php endif; ?>
-                    <input type="password" name="video_password" class="password-input" placeholder="请输入密码" required>
-                    <button type="submit" class="password-submit">验证密码</button>
-                </form>
-                
-                <?php if (isset($passwordError)): ?>
-                    <div class="password-error">
-                        <i class="fas fa-exclamation-circle"></i> <?php echo $passwordError; ?>
-                    </div>
-                <?php endif; ?>
-                
-                <div style="margin-top: 15px; font-size: 14px; color: var(--secondary-color);">
-                    <i class="fas fa-info-circle"></i> 验证成功后，<?= $conf['verification_timeout'] ?>小时内可观看所有受保护内容
-                </div>
-                
-                <a href="?" class="back-link">
-                    <i class="fas fa-arrow-left"></i> 返回搜索
-                </a>
-            </div>
+	    $details = getMovieDetails($selectedId, $source);
+	    
+	    if (!empty($details)) {
+	        $className = $details['class'] ?? $details['type_name'] ?? '';
+	        
+	        if (requiresPassword($className) && !$passwordVerified) {
+	            $showPasswordModal = true;
+	        }
 
-            <script>
-                function initThemeToggle() {
-                    const themeToggle = document.getElementById('themeToggle');
-                    const htmlElement = document.documentElement;
-                    const themeIcon = themeToggle.querySelector('i');
-                    
-                    function getInitialTheme() {
-                        const cookies = document.cookie.split(';');
-                        for (let cookie of cookies) {
-                            const [name, value] = cookie.trim().split('=');
-                            if (name === 'theme_preference') {
-                                return value;
-                            }
-                        }
-                        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                            return 'dark';
-                        }
-                        return 'light';
-                    }
-                    
-                    const currentTheme = getInitialTheme();
-                    htmlElement.setAttribute('data-theme', currentTheme);
-                    if (currentTheme === 'dark') {
-                        themeIcon.className = 'fas fa-sun';
-                    } else {
-                        themeIcon.className = 'fas fa-moon';
-                    }
-                    
-                    function toggleTheme() {
-                        const currentTheme = htmlElement.getAttribute('data-theme');
-                        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                        
-                        htmlElement.setAttribute('data-theme', newTheme);
-                        
-                        if (newTheme === 'dark') {
-                            themeIcon.className = 'fas fa-sun';
-                        } else {
-                            themeIcon.className = 'fas fa-moon';
-                        }
-                        
-                        document.cookie = `theme_preference=${newTheme}; path=/; max-age=${60*60*24*30}`;
-                    }
-                    
-                    themeToggle.addEventListener('click', toggleTheme);
-                    
-                    const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                    colorSchemeQuery.addEventListener('change', (e) => {
-                        if (!document.cookie.includes('theme_preference')) {
-                            const newTheme = e.matches ? 'dark' : 'light';
-                            htmlElement.setAttribute('data-theme', newTheme);
-                            
-                            if (newTheme === 'dark') {
-                                themeIcon.className = 'fas fa-sun';
-                            } else {
-                                themeIcon.className = 'fas fa-moon';
-                            }
-                        }
-                    });
-                }
-                
-                document.addEventListener('DOMContentLoaded', initThemeToggle);
-            </script>
-        </body>
-        </html>
-        <?php
-        exit;
-    }
-}
-    
-    echo "<script>window.currentVideoInfo = {
-    vod_id: '$selectedId',
-    vod_name: '" . addslashes($details['name'] ?? '') . "',
-    vod_pic: '" . addslashes($details['pic'] ?? '') . "',
-    source: '$source',
+	        echo "<script>window.currentVideoInfo = {
+    vod_id: " . json_encode($selectedId) . ",
+    vod_name: " . json_encode($details['name'] ?? '') . ",
+    vod_pic: " . json_encode($details['pic'] ?? '') . ",
+    source: " . json_encode($source) . ",
     watch_time: Date.now()
-};</script>";
-}
+};
+window.episodesFirstTitle = " . json_encode(!empty($details['play_url']) ? ($details['play_url'][0]['title'] ?? '第01集') : '') . ";</script>";
+	    }
+	}
 
 function searchMovies($wd, $y)
 {
@@ -506,6 +214,8 @@ function formatDate($dateString)
             padding: 0;
             box-sizing: border-box;
             transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
         }
         
         body {
@@ -517,153 +227,264 @@ function formatDate($dateString)
             background-position: right bottom, left top;
             background-repeat: no-repeat, repeat;
         }
-        
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        body.playing-mode {
+            overflow: hidden;
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 25px;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
         }
-        
+
+        .container.playing .footer {
+            display: none;
+        }
+
+        .container.search-home .footer {
+            display: none;
+        }
+
+        .container.search-home {
+            min-height: calc(100vh - 110px);
+            padding: 25px;
+        }
+
         .search-section {
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .search-section.has-results {
+            flex: none;
             background: var(--card-bg);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 16px 20px;
             box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            min-height: auto;
+            align-items: stretch;
+            justify-content: flex-start;
+        }
+
+        .search-logo {
+            text-align: center;
+            white-space: nowrap;
             margin-bottom: 20px;
         }
-        
-        .search-title {
-            font-size: 20px;
-            margin-bottom: 15px;
-            color: var(--text-color);
+
+        .search-logo i {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: block;
         }
-        
+
+        [data-theme="dark"] .search-logo i {
+            filter: drop-shadow(0 4px 12px rgba(255, 71, 87, 0.3));
+        }
+
+        .search-logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-color);
+            letter-spacing: -0.5px;
+        }
+
+        .search-section.has-results .search-logo {
+            display: none;
+        }
+
         .search-form {
+            position: relative;
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             align-items: stretch;
+            width: 100%;
+            max-width: 580px;
         }
-        
+
+        .search-section.has-results .search-form {
+            max-width: 100%;
+        }
+
         .search-input {
             flex: 1;
-            min-width: 200px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0 15px;
+            min-width: 0;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0 20px;
             color: var(--text-color);
             font-size: 16px;
-            height: 44px;
+            height: 48px;
             box-sizing: border-box;
-            line-height: 44px;
-            min-height: 44px;
+            line-height: 48px;
+            min-height: 48px;
+            transition: border-color 0.25s, box-shadow 0.25s;
         }
-        
+
+        .search-section.has-results .search-input {
+            height: 42px;
+            line-height: 42px;
+            min-height: 42px;
+            padding: 0 15px;
+            background: var(--bg-color);
+        }
+
         .search-input:focus {
             outline: none;
             border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.12);
         }
-        
+
+        [data-theme="dark"] .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.15);
+        }
+
+        .search-section.has-results .search-input:focus {
+            box-shadow: none;
+        }
+
         .source-select {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0 35px 0 15px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0 40px 0 18px;
             color: var(--text-color);
-            font-size: 16px;
-            height: 44px;
+            font-size: 15px;
+            height: 48px;
             box-sizing: border-box;
-            min-width: 120px;
+            min-width: 110px;
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
+            background-position: right 14px center;
+            background-size: 14px;
             cursor: pointer;
-            line-height: 44px;
+            line-height: 48px;
+            transition: border-color 0.25s;
         }
-        
+
+        .search-section.has-results .source-select {
+            height: 42px;
+            line-height: 42px;
+            padding: 0 35px 0 15px;
+            background-color: var(--bg-color);
+            background-position: right 12px center;
+        }
+
         [data-theme="dark"] .source-select {
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aaaaaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
         }
-        
+
         .source-select:focus {
             outline: none;
             border-color: var(--accent-color);
         }
-        
+
         .search-btn {
             background: var(--accent-color);
             border: none;
-            border-radius: 6px;
-            padding: 0 20px;
+            border-radius: 12px;
+            padding: 0 24px;
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: background 0.2s;
-            height: 44px;
+            transition: background 0.2s, transform 0.15s;
+            height: 48px;
             box-sizing: border-box;
             white-space: nowrap;
-            min-width: 80px;
+            min-width: 90px;
             flex-shrink: 0;
         }
-        
+
+        .search-section.has-results .search-btn {
+            height: 42px;
+            min-width: 70px;
+            padding: 0 18px;
+        }
+
         .search-btn:hover {
             background: var(--accent-hover);
+            transform: translateY(-1px);
         }
-        
-        @media (max-width: 768px) {
-            .search-form {
-                gap: 8px;
-            }
-        
-            .search-input {
-                min-width: 150px;
-            }
-        
-            .source-select {
-                min-width: 100px;
-            }
-        
-            .search-btn {
-                min-width: 70px;
-            }
+
+        .search-btn:active {
+            transform: translateY(0);
         }
-        
+
+        .search-section.has-results .search-btn:hover {
+            transform: none;
+        }
+
         @media (max-width: 600px) {
+            .search-logo i {
+                font-size: 44px;
+            }
+
+            .search-logo h1 {
+                font-size: 22px;
+            }
+
             .search-form {
                 flex-wrap: wrap;
             }
-        
+
             .search-input {
                 flex: 1 0 100%;
-                margin-bottom: 8px;
             }
-        
+
             .source-select {
                 flex: 1;
                 min-width: auto;
             }
-        
+
             .search-btn {
                 flex-shrink: 0;
             }
         }
-        
+
         @media (max-width: 480px) {
             .search-form {
                 flex-direction: column;
                 gap: 10px;
             }
-        
+
             .search-input,
             .source-select,
             .search-btn {
@@ -671,7 +492,7 @@ function formatDate($dateString)
                 min-width: auto;
                 margin-bottom: 0;
             }
-        
+
             .source-select {
                 flex: none;
             }
@@ -679,89 +500,97 @@ function formatDate($dateString)
         
         .results-section {
             background: var(--card-bg);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
             box-shadow: var(--shadow);
             flex: 1;
         }
-        
+
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
         }
-        
+
         .results-title {
-            font-size: 18px;
+            font-size: 16px;
+            font-weight: 600;
             color: var(--text-color);
         }
-        
+
         .results-count {
             color: var(--secondary-color);
-            font-size: 14px;
+            font-size: 13px;
         }
-        
+
         .results-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
         }
-        
+
         .result-item {
             background: var(--bg-color);
-            border-radius: 8px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 14px 16px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             border-left: 3px solid transparent;
         }
-        
+
         .result-item:hover {
             background: var(--hover-color);
-            transform: translateX(5px);
+            transform: translateX(4px);
             border-left-color: var(--accent-color);
         }
-        
+
         .result-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
         }
-        
+
         .result-title {
-            font-size: 18px;
+            font-size: 16px;
+            font-weight: 600;
             color: var(--text-color);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
-        
+
         .result-meta {
             display: flex;
-            gap: 15px;
+            gap: 14px;
             color: var(--secondary-color);
-            font-size: 14px;
+            font-size: 13px;
             flex-wrap: wrap;
         }
-        
+
         .result-meta span {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
-        
+
+        .result-meta span i {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
         .result-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .result-tags {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
-        
+
         .tag {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -770,7 +599,7 @@ function formatDate($dateString)
             font-size: 12px;
             color: var(--secondary-color);
         }
-        
+
         .play-btn {
             background: var(--accent-color);
             color: white;
@@ -785,32 +614,73 @@ function formatDate($dateString)
             transition: background 0.2s;
             text-decoration: none;
         }
-        
+
         .play-btn:hover {
             background: var(--accent-hover);
         }
-        
+
         .player-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            height: 500px;
-        }
-        
-        .video-container {
-            flex: 1;
-            background: var(--card-bg);
-            border-radius: 8px;
+            position: fixed;
+            top: 61px;
+            right: 0;
+            bottom: 0;
+            left: 0;
             overflow: hidden;
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
+            z-index: 100;
+            background: var(--bg-color);
         }
-        
-        .video-player {
-            flex: 1;
-            position: relative;
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 50%;
+            right: 360px;
+            z-index: 99999;
+            background: var(--card-bg);
+            border-radius: 20px 0 0 20px;
+            height: 46px;
+            line-height: 46px;
+            width: 24px;
+            color: var(--text-color);
+            padding-left: 6px;
+            margin-top: -23px;
+            cursor: pointer;
+            transition: right 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-toggle:hover {
+            color: var(--accent-color);
+        }
+
+        .player-row.sidebar-collapsed .sidebar-toggle {
+            right: 0;
+        }
+
+        .player-row.sidebar-collapsed .video-container {
+            margin-right: 0;
+        }
+
+        .player-row.sidebar-collapsed .episodes-section {
+            display: none;
+        }
+
+        .video-container {
             background: #000;
+            position: relative;
+            box-sizing: border-box;
+            height: 100%;
+            margin-right: 360px;
+            transition: margin-right 0.2s ease;
+        }
+
+        .video-player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -822,139 +692,172 @@ function formatDate($dateString)
             object-fit: contain;
         }
         
-        .player-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .video-player:hover .player-controls {
-            opacity: 1;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .progress {
-            height: 100%;
-            background: var(--accent-color);
-            border-radius: 2px;
-            width: 0%;
-        }
-        
-        .control-buttons {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .left-controls, .right-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .control-btn {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        
-        .control-btn:hover {
-            color: var(--accent-color);
-        }
-        
-        .play-btn-large {
-            background: var(--accent-color);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .play-btn-large:hover {
-            background: var(--accent-hover);
-        }
-        
         .episodes-section {
-            flex: 0 0 320px;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 360px;
             background: var(--card-bg);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 0;
         }
-        
-        .section-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: var(--text-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        .episodes-section::-webkit-scrollbar {
+            width: 6px;
+            right: 0;
+        }
+
+        .episodes-section::-webkit-scrollbar-track {
+            background: transparent;
+            margin-right: 0;
+        }
+
+        .episodes-section::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .episodes-section::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        .sidebar-header {
+            padding: 15px 20px 15px 20px;
+            border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
         }
-        
-        .episodes-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            padding-right: 6px;
+        }
+
+        .sidebar-desc-wrapper {
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .sidebar-desc {
+            font-size: 13px;
+            color: var(--secondary-color);
+            line-height: 1.6;
+            padding-right: 6px;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 3;
             overflow: hidden;
+            text-overflow: ellipsis;
+            transition: max-height 0.3s ease;
         }
-        
-        .episodes-list {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow-y: auto;
-            padding-right: 5px;
+
+        .sidebar-desc.expanded {
+            -webkit-line-clamp: unset;
+            max-height: 500px;
         }
-        
-        .episode-item {
+
+        .desc-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            margin-top: 8px;
             background: var(--bg-color);
+            border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 12px;
+            color: var(--secondary-color);
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.2s;
-            border-left: 3px solid transparent;
+        }
+
+        .desc-toggle-btn:hover {
+            background: var(--hover-color);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        .desc-toggle-btn i {
+            font-size: 10px;
+            transition: transform 0.3s;
+        }
+
+        .desc-toggle-btn.expanded i {
+            transform: rotate(180deg);
+        }
+
+        .episodes-header {
+            padding: 0 20px 0 20px;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 14px;
+            padding: 12px 0;
+            color: var(--text-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             flex-shrink: 0;
         }
-        
+
+        .section-title span {
+            font-size: 12px;
+            color: var(--secondary-color);
+        }
+
+        .episodes-container {
+            padding: 15px 20px;
+            flex-shrink: 0;
+        }
+
+        .episodes-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
+        }
+
+        .episode-item {
+            background: var(--bg-color);
+            border-radius: 4px;
+            padding: 10px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
         .episode-item:hover {
             background: var(--hover-color);
+            border-color: var(--accent-color);
         }
-        
+
         .episode-item.active {
-            background: var(--hover-color);
-            border-left: 3px solid var(--accent-color);
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
         }
-        
+
         .episode-title {
-            font-size: 15px;
-            margin-bottom: 5px;
+            font-size: 13px;
             color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .episode-item.active .episode-title {
+            color: #fff;
         }
         
         .episode-meta {
@@ -969,89 +872,13 @@ function formatDate($dateString)
             border-radius: 8px;
             padding: 20px;
             box-shadow: var(--shadow);
-        }
-        
-        .video-title {
-            font-size: 22px;
-            margin-bottom: 10px;
-            color: var(--text-color);
-        }
-        
-        .video-meta {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            color: var(--secondary-color);
-            font-size: 14px;
-            flex-wrap: wrap;
-        }
-        
-        .video-meta span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .video-description {
-            margin-bottom: 20px;
-            line-height: 1.6;
-            color: var(--text-color);
-        }
-        
-        .video-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-size: 14px;
-        }
-        
-        .action-btn:hover {
-            background: var(--hover-color);
-        }
-        
-        .back-btn {
-            background: #FFFFFF;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] .back-btn {
-            background: #1E1E1E;
-        }
-        
-        .back-btn:hover {
-            background: var(--hover-color);
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-            transform: translateX(-5px);
+            position: relative;
+            overflow: hidden;
         }
         
         .footer {
             background: var(--card-bg);
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 20px;
             box-shadow: var(--shadow);
             margin-top: 20px;
@@ -1181,18 +1008,19 @@ function formatDate($dateString)
         
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 50px 20px;
             color: var(--secondary-color);
         }
         
         .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
+            font-size: 40px;
+            margin-bottom: 12px;
             color: var(--border-color);
+            display: block;
         }
         
         .empty-state p {
-            font-size: 16px;
+            font-size: 15px;
         }
         
         .loading-spinner {
@@ -1248,86 +1076,232 @@ function formatDate($dateString)
             font-weight: 500;
             transition: background 0.2s;
         }
-        
+
         .retry-btn:hover {
             background: var(--accent-hover);
         }
-        
-        .video-info-content {
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-        }
-        
-        .video-text {
-            flex: 1;
-        }
-        
-        .video-poster {
-            flex: 0 0 200px;
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: transform 0.3s ease;
-        }
-        
-        .video-poster:hover {
-            transform: translateY(-5px);
-        }
-        
-        .poster-image {
-            width: 100%;
-            height: 280px;
-            object-fit: cover;
-            display: block;
-        }
-        
-        .poster-overlay {
-            position: absolute;
+
+        .password-modal {
+            position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 99999;
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
-        
-        .video-poster:hover .poster-overlay {
-            opacity: 1;
+
+        .password-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+            position: relative;
         }
-        
-        .poster-overlay i {
-            color: white;
+
+        .password-icon {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+
+        .password-title {
             font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .password-description {
+            color: var(--secondary-color);
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+
+        .password-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .password-input {
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: border-color 0.3s;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .password-submit {
             background: var(--accent-color);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-weight: 500;
+        }
+
+        .password-submit:hover {
+            background: var(--accent-hover);
+        }
+
+        .password-error {
+            color: var(--accent-color);
+            margin-top: 10px;
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
+            gap: 5px;
         }
-        
-        @media (max-width: 1024px) {
-            .player-row {
-                flex-direction: column;
-                height: auto;
+
+        .error-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 120px);
+            padding: 40px 20px;
+        }
+
+        .error-content {
+            text-align: center;
+            max-width: 480px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px 32px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .error-content i.error-icon {
+            font-size: 48px;
+            color: var(--accent-color);
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .error-content h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 12px;
+        }
+
+        .error-content p {
+            color: var(--secondary-color);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .retry-link,
+        .home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .retry-link {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .retry-link:hover {
+            background: var(--accent-hover);
+        }
+
+        .home-link {
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .home-link:hover {
+            background: var(--hover-color);
+            border-color: var(--accent-color);
+        }
+
+        @media (max-width: 480px) {
+            .error-content {
+                padding: 30px 20px;
             }
-        
-            .video-container {
-                display: block;
+
+            .error-actions {
+                flex-direction: column;
+            }
+
+            .retry-link,
+            .home-link {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .container.playing {
+                padding: 0;
+                max-width: 100%;
+            }
+
+            body.playing-mode {
+                overflow: auto;
+            }
+
+            .sidebar-toggle {
+                display: none;
+            }
+
+            .player-row.sidebar-collapsed .episodes-section {
+                display: flex;
+            }
+
+            .player-row.sidebar-collapsed .video-container {
+                margin-right: 0;
+            }
+
+            .player-row {
                 position: relative;
-                width: 100%;
+                top: 0;
+                height: auto;
+                background: var(--bg-color);
+            }
+
+            .video-container {
+                margin-right: 0;
+                position: relative;
                 height: 0;
                 padding-bottom: 56.25%;
+                background: #000;
+                border-radius: 0;
             }
-        
+
             .video-player {
                 position: absolute;
                 top: 0;
@@ -1335,132 +1309,29 @@ function formatDate($dateString)
                 width: 100%;
                 height: 100%;
             }
-        
-            .video-player video {
-                object-fit: contain;
-            }
-        
+
             .episodes-section {
-                flex: 1;
-                max-height: 300px;
-                min-height: auto;
+                position: relative;
+                top: 0;
+                right: 0;
+                width: 100%;
+                height: auto;
+                border-radius: 0;
             }
-        }
-        
-        @media (max-width: 768px) {
-            .container {
+
+            .sidebar-header {
                 padding: 15px;
             }
-        
-            .result-header {
-                flex-direction: column;
-                gap: 10px;
+
+            .episodes-header {
+                padding: 0 15px;
             }
-        
-            .result-footer {
-                flex-direction: column;
-                gap: 10px;
-                align-items: flex-start;
-            }
-        
-            .video-title {
-                font-size: 20px;
-            }
-        
-            .video-actions {
-                flex-wrap: wrap;
-            }
-        
-            .video-info-content {
-                flex-direction: column-reverse;
-                gap: 20px;
-            }
-        
-            .video-poster {
-                flex: 0 0 auto;
-                width: 150px;
-                align-self: center;
-            }
-        
-            .poster-image {
-                height: 200px;
-            }
-        
-            .video-container {
-                padding-bottom: 56.25%;
-            }
-        
-            .episodes-section {
-                max-height: 250px;
-            }
-        
-            .player-controls {
-                padding: 10px;
-            }
-        
-            .control-buttons {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-        
-            .left-controls, .right-controls {
-                gap: 10px;
-            }
-        
-            .time {
-                font-size: 12px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .video-container {
-                padding-bottom: 56.25%;
-            }
-        
-            .episodes-section {
+
+            .episodes-container {
                 padding: 15px;
-                max-height: 200px;
-            }
-        
-            .section-title {
-                font-size: 16px;
-                margin-bottom: 10px;
-            }
-        
-            .episode-item {
-                padding: 8px 10px;
-            }
-        
-            .episode-title {
-                font-size: 14px;
             }
         }
-        
-        .episodes-list::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .episodes-list::-webkit-scrollbar-track {
-            background: transparent;
-            border-radius: 4px;
-        }
-        
-        .episodes-list::-webkit-scrollbar-thumb {
-            background: var(--secondary-color);
-            border-radius: 4px;
-            opacity: 0.5;
-        }
-        
-        .episodes-list::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-color);
-            opacity: 0.8;
-        }
-        
-        .episodes-list {
-            scrollbar-width: thin;
-            scrollbar-color: var(--secondary-color) transparent;
-        }
-        
+
         .main-nav {
             background: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
@@ -1470,8 +1341,7 @@ function formatDate($dateString)
         }
         
         .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
+            width: 100%;
             padding: 0 20px;
             display: flex;
             justify-content: space-between;
@@ -1553,10 +1423,47 @@ function formatDate($dateString)
         }
         
         @media (max-width: 768px) {
+            .search-form {
+                max-width: 100%;
+            }
+
+            .source-select {
+                min-width: 100px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .container.playing {
+                padding: 0;
+            }
+
+            .sidebar-title {
+                font-size: 16px;
+            }
+
+            .sidebar-desc {
+                font-size: 12px;
+            }
+
+            .episodes-list {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 6px;
+            }
+
+            .episode-item {
+                padding: 8px 6px;
+            }
+
+            .episode-title {
+                font-size: 12px;
+            }
+
             .mobile-menu-btn {
                 display: flex;
             }
-        
+
             .nav-menu {
                 position: fixed;
                 top: 60px;
@@ -1564,36 +1471,100 @@ function formatDate($dateString)
                 right: 0;
                 background: var(--card-bg);
                 flex-direction: column;
-                padding: 20px;
+                padding: 0;
                 border-top: 1px solid var(--border-color);
                 transform: translateY(-100%);
                 opacity: 0;
                 visibility: hidden;
-                transition: all 0.3s ease;
+                transition: transform 0.3s ease, opacity 0.3s ease;
                 gap: 0;
                 margin: 0;
                 pointer-events: none;
+                z-index: 999;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             }
-        
+
             .nav-menu.active {
                 transform: translateY(0);
                 opacity: 1;
                 visibility: visible;
                 pointer-events: auto;
             }
-        
+
             .nav-link {
-                padding: 12px 0;
+                padding: 15px 20px;
                 border-bottom: 1px solid var(--border-color);
                 width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 15px;
+                transition: all 0.2s ease;
+                background: var(--card-bg);
             }
-        
-            .nav-link:last-child {
-                border-bottom: none;
+
+            .nav-link:first-child {
+                border-top: none;
             }
-        
+
+            .nav-link:hover {
+                background: var(--hover-color);
+                color: var(--accent-color);
+                padding-left: 25px;
+            }
+
+            .nav-link.active {
+                background: var(--hover-color);
+                color: var(--accent-color);
+                border-left: 3px solid var(--accent-color);
+            }
+
+            .nav-link i {
+                width: 18px;
+                text-align: center;
+                font-size: 14px;
+                color: var(--secondary-color);
+                transition: color 0.2s;
+            }
+
+            .nav-link:hover i,
+            .nav-link.active i {
+                color: var(--accent-color);
+            }
+
             .nav-menu:not(.active) {
                 display: none;
+            }
+
+            .history-header {
+                margin-bottom: 12px;
+            }
+
+            .history-header-right {
+                gap: 8px;
+            }
+
+            .history-count {
+                display: none;
+            }
+
+            .history-item {
+                padding: 10px 12px;
+                gap: 12px;
+            }
+
+            .history-item-poster {
+                width: 60px;
+                height: 80px;
+                border-radius: 6px;
+            }
+
+            .history-item-name {
+                font-size: 14px;
+            }
+
+            .history-item-episode {
+                font-size: 12px;
             }
         }
         
@@ -1606,251 +1577,340 @@ function formatDate($dateString)
                 display: flex !important;
             }
         }
-        
-        .history-actions { 
-            display: flex; 
-            justify-content: flex-end; 
-            margin-bottom: 20px; 
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 4px;
         }
-        
-        .clear-history-btn { 
-            background: var(--accent-color); 
-            color: white; 
-            border: none; 
-            padding: 8px 16px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
+
+        .history-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
-        .clear-history-btn:hover { 
-            background: var(--accent-hover); 
+
+        .history-title i {
+            color: var(--accent-color);
+            font-size: 16px;
         }
-        
-        .history-item { 
-            background: var(--bg-color); 
-            border-radius: 8px; 
-            padding: 16px; 
-            margin-bottom: 12px; 
-            display: flex; 
-            gap: 15px; 
-            transition: all 0.2s; 
-            border-left: 3px solid transparent; 
+
+        .history-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .history-item:hover { 
-            background: var(--hover-color); 
-            transform: translateX(5px); 
-            border-left-color: var(--accent-color); 
+
+        .history-count {
+            color: var(--secondary-color);
+            font-size: 12px;
         }
-        
-        .history-poster { 
-            width: 80px; 
-            height: 110px; 
-            border-radius: 6px; 
-            object-fit: cover; 
-            flex-shrink: 0; 
+
+        .clear-history-btn {
+            background: transparent;
+            color: var(--secondary-color);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            transition: none;
         }
-        
-        .history-content { 
-            flex: 1; 
+
+        .clear-history-btn:hover {
+            background: var(--hover-color);
+            color: #e53e3e;
         }
-        
-        .history-title { 
-            font-size: 18px; 
-            margin-bottom: 8px; 
-            color: var(--text-color); 
+
+        [data-theme="dark"] .clear-history-btn:hover {
+            color: #ff4757;
         }
-        
-        .history-meta { 
-            display: flex; 
-            gap: 15px; 
-            color: var(--secondary-color); 
-            font-size: 14px; 
-            margin-bottom: 8px; 
-            flex-wrap: wrap; 
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        
-        .history-meta span { 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: none;
+            animation: historyFadeIn 0.35s ease both;
         }
-        
-        .history-actions-item { 
-            display: flex; 
-            gap: 10px; 
-            margin-top: 10px; 
+
+        .history-item:hover {
+            background: var(--hover-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
-        
-        .continue-btn { 
-            background: var(--accent-color); 
-            color: white; 
-            padding: 6px 12px; 
-            border-radius: 4px; 
-            text-decoration: none; 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
-            font-size: 13px; 
-            transition: background 0.2s; 
+
+        .history-item * {
+            transition: none !important;
         }
-        
-        .continue-btn:hover { 
-            background: var(--accent-hover); 
+
+        [data-theme="dark"] .history-item:hover {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
         }
-        
-        .remove-btn { 
-            background: transparent; 
-            border: 1px solid var(--border-color); 
-            color: var(--secondary-color); 
-            padding: 6px 12px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 5px; 
-            font-size: 13px; 
-            transition: all 0.2s; 
-        }
-        
-        .remove-btn:hover { 
-            background: var(--accent-color); 
-            color: white; 
-            border-color: var(--accent-color); 
-        }
-        
-        @media (max-width: 768px) {
-            .history-actions {
-        justify-content: center;
-        margin-bottom: 15px;
+
+        @keyframes historyFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
             }
-            
-            .clear-history-btn {
-        padding: 8px 16px;
-        font-size: 14px;
-            }
-            
-            .history-item {
-        flex-direction: row;
-        gap: 0;
-        padding: 12px;
-        margin-bottom: 10px;
-        position: relative;
-            }
-            
-            .history-poster {
-        display: none;
-            }
-            
-            .history-content {
-        width: 100%;
-        padding: 0;
-            }
-            
-            .history-title {
-        font-size: 16px;
-        margin-bottom: 10px;
-        font-weight: 600;
-        line-height: 1.4;
-            }
-            
-            .history-meta {
-        justify-content: flex-start;
-        gap: 15px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-            }
-            
-            .history-meta span {
-        font-size: 13px;
-        background: var(--card-bg);
-        padding: 4px 10px;
-        border-radius: 6px;
-        border: 1px solid var(--border-color);
-            }
-            
-            .history-actions-item {
-        justify-content: flex-start;
-        gap: 10px;
-            }
-            
-            .continue-btn,
-            .remove-btn {
-        padding: 6px 12px;
-        font-size: 13px;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-        
+
+        .history-item:nth-child(1)  { animation-delay: 0.00s; }
+        .history-item:nth-child(2)  { animation-delay: 0.03s; }
+        .history-item:nth-child(3)  { animation-delay: 0.06s; }
+        .history-item:nth-child(4)  { animation-delay: 0.09s; }
+        .history-item:nth-child(5)  { animation-delay: 0.12s; }
+        .history-item:nth-child(6)  { animation-delay: 0.15s; }
+        .history-item:nth-child(7)  { animation-delay: 0.18s; }
+        .history-item:nth-child(8)  { animation-delay: 0.21s; }
+        .history-item:nth-child(9)  { animation-delay: 0.24s; }
+        .history-item:nth-child(10) { animation-delay: 0.27s; }
+        .history-item:nth-child(n+11) { animation-delay: 0.30s; }
+
+        .history-item-poster {
+            width: 72px;
+            height: 96px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: var(--bg-color);
+            position: relative;
+        }
+
+        .history-item-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .history-item:hover .history-item-poster img {
+            transform: scale(1.05);
+        }
+
+        .history-item-source {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background: rgba(0, 0, 0, 0.72);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            line-height: 1.3;
+            backdrop-filter: blur(4px);
+        }
+
+        .history-item-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .history-item-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-color);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-item-episode {
+            font-size: 13px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .history-item-episode i {
+            color: var(--accent-color);
+            font-size: 12px;
+        }
+
+        .history-item-episode span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-item-time {
+            font-size: 12px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .history-item-time i {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        .history-item-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .history-action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-color);
+            color: var(--secondary-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: none;
+        }
+
+        .history-action-btn.play-btn:hover {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+        }
+
+        .history-action-btn.delete-btn:hover {
+            background: #e53e3e;
+            color: #fff;
+            border-color: #e53e3e;
+        }
+
+        [data-theme="dark"] .history-action-btn.delete-btn:hover {
+            background: #ff4757;
+            border-color: #ff4757;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            animation: historyFadeIn 0.35s ease both;
+        }
+
+        .history-empty-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .history-empty-icon i {
+            font-size: 32px;
+            color: var(--border-color);
+        }
+
+        .history-empty h3 {
+            font-size: 18px;
+            color: var(--text-color);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .history-empty p {
+            color: var(--secondary-color);
+            font-size: 14px;
+        }
+
         @media (max-width: 480px) {
             .history-item {
-        padding: 15px;
-        border-left: 4px solid var(--accent-color);
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 10px;
             }
-            
-            .history-title {
-        font-size: 15px;
-        margin-bottom: 8px;
+
+            .history-item-info {
+                flex: 1;
+                min-width: 0;
             }
-            
-            .history-meta {
-        gap: 8px;
-        margin-bottom: 10px;
-            }
-            
-            .history-meta span {
-        font-size: 12px;
-        padding: 3px 8px;
-            }
-            
-            .history-actions-item {
-        gap: 8px;
-            }
-            
-            .continue-btn,
-            .remove-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-            }
-        }
-        
-        @media (max-width: 360px) {
-            .history-item {
-        padding: 12px;
-            }
-            
-            .history-title {
-        font-size: 14px;
-            }
-            
-            .history-meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-            }
-            
-            .history-meta span {
-        width: 100%;
-        justify-content: center;
-            }
-            
-            .history-actions-item {
-        flex-direction: column;
-        gap: 6px;
-            }
-            
-            .continue-btn,
-            .remove-btn {
-        padding: 5px 10px;
-        font-size: 12px;
-        width: 100%;
+
+            .history-item-actions {
+                width: 100%;
+                justify-content: flex-end;
+                padding-top: 8px;
+                border-top: 1px solid var(--border-color);
+                margin-top: 2px;
             }
         }
     </style>
 </head>
-<body>
+<body<?php echo (!empty($details) && !$isHistoryPage && !empty($selectedId)) ? ' class="playing-mode"' : ''; ?>>
+    <?php if (!empty($showPasswordModal)): ?>
+    <div class="password-modal">
+        <div class="password-container">
+            <div class="password-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2 class="password-title">需要密码验证</h2>
+            <p class="password-description">此内容受密码保护，请输入观看密码</p>
+
+            <div class="video-info" style="background: var(--bg-color); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; border: 1px solid var(--border-color);">
+                <div style="font-weight: bold; margin-bottom: 5px; font-size: 16px;"><?php echo htmlspecialchars($details['name'] ?? ''); ?></div>
+                <div style="color: var(--secondary-color); font-size: 14px;">
+                    分类信息: <span style="color: var(--accent-color);"><?php echo htmlspecialchars($className); ?></span><br>
+                    验证状态: <span style="color: var(--accent-color);">全局验证</span><br>
+                    <small style="font-size: 12px; color: var(--secondary-color);">输入一次密码后，可观看所有受保护内容</small>
+                </div>
+            </div>
+
+            <form method="POST" class="password-form">
+                <?php if (isset($selectedId) && isset($source)): ?>
+                    <input type="hidden" name="video_id" value="<?php echo htmlspecialchars($selectedId, ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="source" value="<?php echo htmlspecialchars($source, ENT_QUOTES, 'UTF-8'); ?>">
+                <?php endif; ?>
+                <input type="password" name="video_password" class="password-input" placeholder="请输入密码" required autofocus>
+                <button type="submit" class="password-submit">验证密码</button>
+            </form>
+
+            <?php if (isset($passwordError)): ?>
+                <div class="password-error">
+                    <i class="fas fa-exclamation-circle"></i> <?php echo $passwordError; ?>
+                </div>
+            <?php endif; ?>
+
+            <div style="margin-top: 15px; font-size: 14px; color: var(--secondary-color);">
+                <i class="fas fa-info-circle"></i> 验证成功后，<?= $conf['verification_timeout'] ?>小时内可观看所有受保护内容
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
     <div id="dailyNoticeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
         <div style="background: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); max-width: 500px; width: 90%; padding: 25px; border: 1px solid var(--border-color); position: relative;">
             <h3 style="font-size: 20px; margin-bottom: 15px; color: var(--accent-color); display: flex; align-items: center; gap: 10px;">
@@ -1868,9 +1928,9 @@ function formatDate($dateString)
                 <b><span class="brand-accent">M</span>video</b>
             </a>
             <div class="nav-menu" id="navMenu">
-                <a href="./" class="nav-link <?= !$isHistoryPage ? 'active' : '' ?>">首页</a>
-                <a href="?page=history" class="nav-link <?= $isHistoryPage ? 'active' : '' ?>">观看记录</a>
-                <a href="javascript:void(0)" class="nav-link" id="customPlayBtn">自定义播放</a> <?php if ($passwordVerified): ?> <a href="?logout=1" class="nav-link"><i class="fas fa-sign-out-alt"></i> 退出验证</a> <?php endif; ?>
+                <a href="./" class="nav-link <?= !$isHistoryPage ? 'active' : '' ?>"><i class="fas fa-home"></i> 首页</a>
+                <a href="?page=history" class="nav-link <?= $isHistoryPage ? 'active' : '' ?>"><i class="fas fa-history"></i> 观看记录</a>
+                <a href="javascript:void(0)" class="nav-link" id="customPlayBtn"><i class="fas fa-play-circle"></i> 自定义播放</a> <?php if ($passwordVerified): ?> <a href="?logout=1" class="nav-link"><i class="fas fa-sign-out-alt"></i> 退出验证</a> <?php endif; ?>
             </div>
             <div class="nav-actions">
                 <button class="theme-toggle-nav" id="themeToggle">
@@ -1897,27 +1957,33 @@ function formatDate($dateString)
             </div>
         </div>
     </div>
-    <div class="container"> <?php if ($isHistoryPage): ?> <div class="results-section">
-            <div class="results-header">
-                <h3 class="results-title">观看记录</h3>
-                <div class="results-count" id="historyCount">共 0 条记录</div>
-            </div>
-            <div class="history-actions">
-                <button class="clear-history-btn" id="clearHistoryBtn">
-                    <i class="fas fa-trash"></i>
-                    <span>清空记录</span>
-                </button>
-            </div>
-            <div class="results-list" id="historyList">
-                <div class="empty-state">
-                    <i class="fas fa-history"></i>
-                    <p>暂无观看记录</p>
+    <div class="container <?php echo (!empty($details) && !$isHistoryPage && !empty($selectedId)) ? 'playing' : ''; ?> <?php echo (empty($selectedId) && !$isHistoryPage && empty($searchTerm)) ? 'search-home' : ''; ?>"> <?php if ($isHistoryPage): ?> <div class="history-section">
+            <div class="history-header">
+                <h3 class="history-title"><i class="fas fa-history"></i> 观看记录</h3>
+                <div class="history-header-right">
+                    <span class="history-count" id="historyCount">共 0 条记录</span>
+                    <button class="clear-history-btn" id="clearHistoryBtn">
+                        <i class="fas fa-trash-can"></i>
+                        <span>清空记录</span>
+                    </button>
                 </div>
             </div>
-        </div> <?php elseif (empty($selectedId)): ?> <div class="search-section">
-            <h2 class="search-title">搜索影片</h2>
+            <div class="history-list" id="historyList">
+                <div class="history-empty">
+                    <div class="history-empty-icon">
+                        <i class="fas fa-clock-rotate-left"></i>
+                    </div>
+                    <h3>暂无观看记录</h3>
+                    <p>开始观看视频后将自动记录</p>
+                </div>
+            </div>
+        </div> <?php elseif (empty($selectedId)): ?> <div class="search-section <?= !empty($searchTerm) ? 'has-results' : '' ?>">
+            <div class="search-logo">
+                <i class="fas fa-film"></i>
+                <h1>搜索影片</h1>
+            </div>
             <form method="GET" class="search-form">
-                <input type="text" name="wd" class="search-input" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="输入影片名称...">
+                <input type="text" name="wd" class="search-input" value="<?= htmlspecialchars($searchTerm) ?>" placeholder="输入影片名称..." autofocus>
                 <select class="source-select" name="y"> <?php for ($i = 1; $i <= $source_count; $i++): ?> <option value="<?= $i ?>" <?= ($source == (string)$i) ? 'selected' : '' ?>> 片源<?= $i ?> </option> <?php endfor; ?> </select>
                 <button type="submit" class="search-btn">
                     <i class="fas fa-search"></i>
@@ -1925,10 +1991,10 @@ function formatDate($dateString)
                 </button>
             </form>
         </div>
-        <div class="results-section">
+        <?php if (!empty($searchTerm)): ?> <div class="results-section">
             <div class="results-header">
                 <h3 class="results-title">搜索结果</h3>
-                <div class="results-count"> <?php if (!empty($searchTerm)): ?> <?php if (!empty($results)): ?> 找到 <?= count($results) ?> 部影片 <?php else: ?> 未找到相关影片 <?php endif; ?> <?php else: ?> 请输入搜索关键词 <?php endif; ?> </div>
+                <div class="results-count"> <?php if (!empty($results)): ?> 找到 <?= count($results) ?> 部影片 <?php else: ?> 未找到相关影片 <?php endif; ?> </div>
             </div> <?php if ($passwordVerified): ?> <div style="background: var(--success-color); color: white; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px;">
                 <i class="fas fa-shield-alt"></i> 您已通过密码验证！
             </div> <?php endif; ?> <div class="results-list" id="resultsList"> <?php if (!empty($results)): ?> <?php foreach ($results as $item): ?> <a href="?id=<?= $item['vod_id'] ?>&y=<?= $source ?>" class="result-item-link" style="display: block; text-decoration: none; color: inherit;">
@@ -1944,18 +2010,14 @@ function formatDate($dateString)
                             </div>
                         </div>
                     </div>
-                </a> <?php endforeach; ?> <?php elseif (!empty($searchTerm)): ?> <div class="empty-state">
+                </a> <?php endforeach; ?> <?php else: ?> <div class="empty-state">
                     <i class="fas fa-film"></i>
                     <p>未找到相关影片</p>
-                </div> <?php else: ?> <div class="empty-state">
-                    <i class="fas fa-search"></i>
-                    <p>输入关键词搜索影片</p>
                 </div> <?php endif; ?> </div>
-        </div> <?php else: ?> <?php if (!empty($details)): ?> <a href="?" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-            <span>返回搜索</span>
-        </a>
-        <div class="player-row">
+        </div> <?php endif; ?> <?php else: ?> <?php if (!empty($details) && !empty($details['play_url'])): ?> <div class="player-row">
+            <div class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-chevron-right"></i>
+            </div>
             <div class="video-container">
                 <div class="video-player">
                     <div id="player" style="width:100%;height:100%;"></div>
@@ -1968,8 +2030,19 @@ function formatDate($dateString)
                 </div>
             </div>
             <div class="episodes-section">
-                <h2 class="section-title"> 选集 <span id="episodesCount">共 <?= !empty($details['play_url']) ? count($details['play_url']) : 0 ?> 集</span>
-                </h2>
+                <div class="sidebar-header">
+                    <h1 class="sidebar-title" id="videoTitle" data-original-title="<?= htmlspecialchars($details['name'] ?? '') ?>"><?= htmlspecialchars($details['name'] ?? '加载中...') ?></h1>
+                    <div class="sidebar-desc-wrapper">
+                        <div class="sidebar-desc" id="videoDescription"><?= htmlspecialchars($details['content'] ?? '正在获取视频信息...') ?></div>
+                        <button class="desc-toggle-btn" id="descToggleBtn">
+                            <span class="toggle-text">展开</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="episodes-header">
+                    <h2 class="section-title">选集 <span id="episodesCount">共 <?= !empty($details['play_url']) ? count($details['play_url']) : 0 ?> 集</span></h2>
+                </div>
                 <div class="episodes-container">
                     <div class="episodes-list" id="episodesList"> <?php if (!empty($details['play_url'])): ?> <?php foreach ($details['play_url'] as $index => $episode): ?> <div class="episode-item">
                             <div class="episode-title"><?= htmlspecialchars($episode['title']) ?></div>
@@ -1979,48 +2052,32 @@ function formatDate($dateString)
                         </div> <?php endif; ?> </div>
                 </div>
             </div>
-        </div>
-        <div class="video-info">
-            <div class="video-info-content">
-                <div class="video-text">
-                    <h1 class="video-title" id="videoTitle" data-original-title="<?= htmlspecialchars($details['name'] ?? '') ?>"><?= htmlspecialchars($details['name'] ?? '加载中...') ?></h1>
-                    <div class="video-meta">
-                        <span id="videoRating"><i class="fas fa-star"></i> <?= htmlspecialchars($details['douban_score'] ?? 'N/A') ?></span>
-                        <span id="videoDuration"><i class="fas fa-clock"></i> <?= htmlspecialchars($details['director'] ?? '未知导演') ?></span>
-                        <span id="videoDate"><i class="fas fa-calendar"></i> <?= htmlspecialchars($details['pubdate'] ?? '未知日期') ?></span>
-                        <span id="videoSource"><i class="fas fa-server"></i> <?= htmlspecialchars($details['area'] ?? '未知地区') ?></span>
-                    </div>
-                    <p class="video-description" id="videoDescription"><?= htmlspecialchars($details['content'] ?? '正在获取视频信息...') ?></p>
-                </div>
-                <div class="video-poster">
-                    <img src="<?= !empty($details['pic']) ? htmlspecialchars($details['pic']) : 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80' ?>"
-                        alt="<?= htmlspecialchars($details['name'] ?? '影片海报') ?>" class="poster-image">
-                    <div class="poster-overlay">
-                        <i class="fas fa-expand"></i>
-                    </div>
-                </div>
-            </div>
         </div> <?php if (!empty($details['play_url'])): ?> <script>
-            window.episodesData = [
-                <?php foreach ($details['play_url'] as $index => $episode): ?>
-                {
-                    url: "<?= addslashes($episode['link']) ?>",
-                    title: "<?= addslashes($episode['title']) ?>",
-                    index: <?= $index ?>
-                }<?= ($index < count($details['play_url']) - 1) ? ',' : '' ?>
-                <?php endforeach; ?>
-            ];
+            window.episodesData = <?= json_encode(array_map(function($index, $episode) {
+                return [
+                    'url' => $episode['link'] ?? '',
+                    'title' => $episode['title'] ?? '',
+                    'index' => $index
+                ];
+            }, array_keys($details['play_url']), $details['play_url']), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) ?>;
             console.log('PHP生成的剧集数据:', window.episodesData);
             window.apiKeyConfigured = <?php echo $apiKeyConfigured ? 'true' : 'false'; ?>;
             console.log('API Key 配置状态:', window.apiKeyConfigured);
         </script>
-        <script src="https://baiapi.cn/js-lib/Mvideo_v2/SharedViewing.js"></script> <?php endif; ?> <?php else: ?> <div class="empty-state">
-            <i class="fas fa-exclamation-circle"></i>
-            <p>无法加载影片详情</p>
-            <a href="?" class="back-btn" style="margin-top: 20px;">
-                <i class="fas fa-arrow-left"></i>
-                <span>返回搜索</span>
-            </a>
+        <script src="https://baiapi.cn/js-lib/Mvideo_v2/SharedViewing.js"></script> <?php endif; ?> <?php else: ?>
+        <div class="error-page">
+            <div class="error-content">
+                <i class="fas fa-exclamation-triangle error-icon"></i>
+                <h2>视频加载失败</h2>
+                <p><?php
+                    if (empty($details)) echo '无法获取视频信息，请检查网络或稍后重试';
+                    elseif (empty($details['play_url'])) echo '该视频暂无可用播放源，请尝试切换片源或稍后再试';
+                    else echo '视频数据异常，请刷新页面重试';
+                ?></p>
+                <div class="error-actions">
+                    <a href="./" class="home-link"><i class="fas fa-home"></i> 返回首页</a>
+                </div>
+            </div>
         </div> <?php endif; ?> <?php endif; ?> <footer class="footer">
             <div class="footer-container">
                 <div class="footer-content">
@@ -2222,36 +2279,61 @@ function formatDate($dateString)
         function renderWatchHistory() {
             const historyList = document.getElementById('historyList');
             const historyCount = document.getElementById('historyCount');
-        
+
             if (!historyList) return;
-        
+
             const history = WatchHistory.getAll();
-        
+
             if (history.length === 0) {
-                historyList.innerHTML = `<div class="empty-state"><i class="fas fa-history"></i><p>暂无观看记录</p></div>`;
+                historyList.innerHTML = `<div class="history-empty">
+                    <div class="history-empty-icon">
+                        <i class="fas fa-clock-rotate-left"></i>
+                    </div>
+                    <h3>暂无观看记录</h3>
+                    <p>开始观看视频后将自动记录</p>
+                </div>`;
                 historyCount.textContent = '共 0 条记录';
                 return;
             }
-        
+
             historyCount.textContent = `共 ${history.length} 条记录`;
-        
-            historyList.innerHTML = history.map(item => `
-                <div class="history-item">
-                    <img src="${item.vod_pic || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80'}" alt="${item.vod_name}" class="history-poster">
-                    <div class="history-content">
-                        <h4 class="history-title">${item.vod_name}</h4>
-                        <div class="history-meta">
-                            <span><i class="fas fa-play-circle"></i> ${item.current_episode || '未记录集数'}</span>
-                            <span><i class="fas fa-server"></i> 片源${item.source}</span>
-                            <span><i class="fas fa-clock"></i> ${WatchHistory.formatTime(item.watch_time)}</span>
+
+            historyList.innerHTML = history.map((item, index) => {
+                const picUrl = (item.vod_pic || 'https://pic1.imgdb.cn/item/6812e03558cb8da5c8d5d3c3.png').replace(/'/g, "%27");
+                const safeName = item.vod_name ? item.vod_name.replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
+                const vodIdEnc = encodeURIComponent(item.vod_id);
+                const sourceEnc = encodeURIComponent(item.source);
+                const animDelay = index < 10 ? (index * 0.03).toFixed(2) : '0.30';
+
+                return `
+                <div class="history-item" style="animation-delay:${animDelay}s" onclick="window.location.href='?id=${vodIdEnc}&y=${sourceEnc}'">
+                    <div class="history-item-poster">
+                        <img src="${picUrl}" alt="${safeName}" loading="lazy">
+                        <span class="history-item-source">片源${item.source}</span>
+                    </div>
+                    <div class="history-item-info">
+                        <div class="history-item-name" title="${safeName}">${item.vod_name || '未知视频'}</div>
+                        <div class="history-item-episode">
+                            <i class="fas fa-play-circle"></i>
+                            <span>${item.current_episode || '未记录集数'}</span>
                         </div>
-                        <div class="history-actions-item">
-                            <a href="?id=${item.vod_id}&y=${item.source}" class="continue-btn"><i class="fas fa-play"></i>继续观看</a>
-                            <button class="remove-btn" onclick="removeHistoryItem('${item.vod_id}')"><i class="fas fa-times"></i>删除记录</button>
+                        <div class="history-item-time">
+                            <i class="far fa-clock"></i>
+                            ${WatchHistory.formatTime(item.watch_time)}
                         </div>
                     </div>
-                </div>
-            `).join('');
+                    <div class="history-item-actions">
+                        <button class="history-action-btn play-btn" title="继续播放"
+                            onclick="event.stopPropagation(); window.location.href='?id=${vodIdEnc}&y=${sourceEnc}'">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="history-action-btn delete-btn" title="删除记录"
+                            onclick="event.stopPropagation(); removeHistoryItem('${vodIdEnc}')">
+                            <i class="fas fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
         }
         
         function removeHistoryItem(vodId) {
@@ -2266,20 +2348,8 @@ function formatDate($dateString)
         let currentIndex = 0;
         let currentRequestController = null;
         let apiKeyConfigured = window.apiKeyConfigured || false;
-        let isSwitchingEpisode = false;
-        
-        setInterval(() => {
-            if (isSwitchingEpisode) {
-                console.warn('状态锁已锁定超过5秒，强制重置');
-                isSwitchingEpisode = false;
-            }
-        }, 5000);
-        
-        window.resetSwitchLock = function() {
-            console.log('手动重置切换状态锁');
-            isSwitchingEpisode = false;
-            console.log('当前状态锁:', isSwitchingEpisode);
-        };
+        let switchGeneration = 0;
+        let playerReady = false;
         
         function playM3u8(video, url, art) {
             console.log('使用HLS播放m3u8:', url);
@@ -2328,43 +2398,189 @@ function formatDate($dateString)
         }
         
         function showError(message) {
+            if (playerReady && message.includes('初始化失败')) {
+                console.warn('播放器已就绪，跳过初始化错误提示:', message);
+                return;
+            }
+
             const loadingSpinner = document.getElementById('loadingSpinner');
             const errorMessage = document.getElementById('errorMessage');
             const errorDetails = document.getElementById('errorDetails');
-        
+
+            clearLoadTimeout();
+
             if (loadingSpinner) loadingSpinner.style.display = 'none';
             if (errorDetails) errorDetails.textContent = message;
             if (errorMessage) errorMessage.style.display = 'block';
-        
+
             console.error('播放错误:', message);
         }
-        
+
+        let playerLoadTimeout = null;
+        function startLoadTimeout(seconds = 15) {
+            if (playerLoadTimeout) {
+                clearTimeout(playerLoadTimeout);
+            }
+
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            if (loadingSpinner) loadingSpinner.style.display = 'block';
+
+            playerLoadTimeout = setTimeout(() => {
+                console.error('播放器加载超时');
+                showError('视频加载超时，请检查网络连接或尝试切换其他源');
+            }, seconds * 1000);
+        }
+
+        function clearLoadTimeout() {
+            if (playerLoadTimeout) {
+                clearTimeout(playerLoadTimeout);
+                playerLoadTimeout = null;
+            }
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            if (loadingSpinner) loadingSpinner.style.display = 'none';
+        }
+
+        function initPlayerWithTimeout(episodeIndex, retryOnFail = false) {
+            startLoadTimeout(30);
+
+            if (typeof createArtplayerForEpisode === 'undefined') {
+                console.warn('播放器JS未加载完成，等待中...');
+                let jsRetryCount = 0;
+                const jsMaxRetries = 40;
+                const jsRetryInterval = setInterval(() => {
+                    jsRetryCount++;
+                    if (typeof createArtplayerForEpisode !== 'undefined') {
+                        clearInterval(jsRetryInterval);
+                        console.log('播放器JS已加载完成，开始初始化');
+                        createArtplayerForEpisode(episodeIndex);
+                        monitorPlayerInitialization();
+                    } else if (jsRetryCount >= jsMaxRetries) {
+                        clearInterval(jsRetryInterval);
+                        showError('播放器组件加载失败，请刷新页面重试');
+                    }
+                }, 250);
+                return;
+            }
+
+            createArtplayerForEpisode(episodeIndex);
+            monitorPlayerInitialization();
+        }
+
+        function monitorPlayerInitialization() {
+            let checkCount = 0;
+            const maxChecks = 100;
+            const checkInterval = setInterval(() => {
+                checkCount++;
+
+                if (art) {
+                    clearInterval(checkInterval);
+                    console.log(`播放器实例在第 ${(checkCount * 300) / 1000} 秒创建成功`);
+                    setupPlayerErrorHandling();
+                    console.log('播放器错误处理已绑定');
+                } else if (checkCount >= maxChecks) {
+                    clearInterval(checkInterval);
+                    console.error('播放器实例创建超时');
+                    if (!playerReady) {
+                        showError('播放器初始化失败，请检查网络或刷新页面重试');
+                    } else {
+                        console.warn('播放器已就绪，跳过超时错误提示');
+                    }
+                }
+            }, 300);
+        }
+
+        function setupPlayerErrorHandling() {
+            if (!art) return;
+
+            art.on('error', (error) => {
+                console.error('播放器错误:', error);
+                showError('视频播放出错，请尝试重试或切换其他剧集');
+            });
+
+            art.on('video:canplay', () => {
+                clearLoadTimeout();
+                playerReady = true;
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) errorMessage.style.display = 'none';
+                console.log('视频加载成功，播放器已就绪，清除超时计时器和错误提示');
+            });
+
+            art.on('play', () => {
+                clearLoadTimeout();
+                playerReady = true;
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) errorMessage.style.display = 'none';
+                console.log('视频开始播放，播放器已就绪');
+            });
+
+            art.on('ready', () => {
+                clearLoadTimeout();
+                playerReady = true;
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) errorMessage.style.display = 'none';
+                console.log('播放器ready事件触发，已就绪');
+            });
+
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const handleFullscreen = (state) => {
+                if (sidebarToggle) sidebarToggle.style.display = state ? 'none' : '';
+            };
+            art.on('fullscreen', handleFullscreen);
+            art.on('fullscreenWeb', handleFullscreen);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const styleEl = document.createElement('style');
+            styleEl.id = 'player-controls-responsive';
+            document.head.appendChild(styleEl);
+
+            function adjust() {
+                const container = document.querySelector('.video-container');
+                if (!container) return;
+                const w = container.offsetWidth;
+                if (w <= 450) styleEl.textContent = `.video-container .art-controls { zoom: 0.65 !important; }`;
+                else if (w <= 600) styleEl.textContent = `.video-container .art-controls { zoom: 0.75 !important; }`;
+                else if (w <= 700) styleEl.textContent = `.video-container .art-controls { zoom: 0.85 !important; }`;
+                else styleEl.textContent = '';
+            }
+
+            const videoContainer = document.querySelector('.video-container');
+            const playerEl = document.getElementById('player');
+            if (!videoContainer || !playerEl) return;
+
+            new ResizeObserver(adjust).observe(videoContainer);
+            new MutationObserver(adjust).observe(playerEl, { childList: true, subtree: true });
+        });
+
         function resetPlayerImmediately() {
+            clearLoadTimeout();
+
             const container = document.querySelector('#player');
             if (!container) return;
-        
+
             container.innerHTML = '';
-        
+
             const loadingSpinner = document.getElementById('loadingSpinner');
             const errorMessage = document.getElementById('errorMessage');
-        
+
             if (loadingSpinner) loadingSpinner.style.display = 'block';
             if (errorMessage) errorMessage.style.display = 'none';
-        
+
             if (art) {
-        try {
-            art.off('ready');
-            art.off('play');
-            art.off('pause');
-            art.off('error');
-            art.off('video:ended');
-            if (typeof art.destroy === 'function') {
-                art.destroy(false);
-            }
-        } catch (e) {
-            console.warn('销毁旧播放器时出错:', e);
-        }
-        art = null;
+                try {
+                    art.off('ready');
+                    art.off('play');
+                    art.off('pause');
+                    art.off('error');
+                    art.off('video:ended');
+                    art.off('video:canplay');
+                    if (typeof art.destroy === 'function') {
+                        art.destroy(false);
+                    }
+                } catch (e) {
+                    console.warn('销毁旧播放器时出错:', e);
+                }
+                art = null;
             }
         
             console.log('播放器界面已重置');
@@ -2399,31 +2615,9 @@ function formatDate($dateString)
         }
         
         function switchToNextEpisode(nextIndex) {
-            console.log('=== 切换下一集调试 ===');
-            console.log('当前索引:', currentIndex, '目标索引:', nextIndex);
-            console.log('切换前状态锁:', isSwitchingEpisode);
-            
-            if (isSwitchingEpisode) {
-                console.log('切换被阻止: 正在切换中');
-                return;
-            }
-            
-            if (!episodes || nextIndex >= episodes.length) {
-                console.log('切换被阻止: 剧集不存在或已是最后一集');
-                return;
-            }
-            
-            isSwitchingEpisode = true;
-            console.log('开始切换到下一集:', nextIndex);
+            if (!episodes || nextIndex >= episodes.length) return;
             
             const nextEpisode = episodes[nextIndex];
-            
-            const volume = art ? art.volume : 0.7;
-            const wasFullscreen = art ? art.fullscreen : false;
-            
-            if (art) {
-                art.notice.show = `正在切换到 ${nextEpisode.title}`;
-            }
             
             if (window.currentVideoInfo && episodes && episodes[nextIndex]) {
                 const nextEpisodeInfo = {
@@ -2438,20 +2632,72 @@ function formatDate($dateString)
                 WatchHistory.add(nextEpisodeInfo);
             }
             
-            setTimeout(() => {
+            switchEpisodeWithoutDestroy(nextIndex);
+        }
+        
+        async function switchEpisodeWithoutDestroy(nextIndex) {
+            if (!episodes || !episodes[nextIndex]) return;
+            
+            const gen = ++switchGeneration;
+            const ep = episodes[nextIndex];
+
+            if (art) art.notice.show = `正在切换到 ${ep.title}`;
+            currentIndex = nextIndex;
+            highlightEpisode(nextIndex);
+            scrollEpisodeIntoView(nextIndex);
+            updateUIForCurrentIndex(nextIndex);
+            
+            let finalUrl = ep.url;
+            
+            if (finalUrl && finalUrl.includes('.m3u8') && apiKeyConfigured) {
                 try {
-                    if (art) {
-                        art.destroy();
+                    const params = new URLSearchParams({ url: finalUrl, type: 'json' });
+                    const response = await fetch(`./api-proxy.php?${params}`);
+                    if (gen !== switchGeneration) {
+                        console.log(`第${nextIndex}集切换被更新请求取代，跳过`);
+                        return;
+                    }
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.code === 200 && data.file_url) {
+                            finalUrl = data.file_url;
+                        }
                     }
                 } catch (e) {
-                    console.warn('销毁播放器时出错:', e);
+                    console.warn('API处理失败，使用原始URL:', e);
                 }
-                
-                art = null;
-                
-                createArtplayerForEpisode(nextIndex);
-                
-            }, 500);
+            }
+
+            if (gen !== switchGeneration) return;
+            
+            if (art && finalUrl) {
+                if (finalUrl.includes('.m3u8') && art.hls) {
+                    art.hls.loadSource(finalUrl);
+                    art.hls.attachMedia(art.video);
+                    art.video.load();
+                    art.once('video:canplay', () => {
+                        if (gen !== switchGeneration) return;
+                        console.log('HLS视频切换成功:', ep.title);
+                        clearLoadTimeout();
+                        art.play().catch(() => {});
+                    });
+                } else {
+                    art.switchUrl(finalUrl, ep.title);
+                    art.once('video:canplay', () => {
+                        if (gen !== switchGeneration) return;
+                        console.log('视频切换成功:', ep.title);
+                        clearLoadTimeout();
+                        art.play().catch(() => {});
+                    });
+                }
+                art.once('error', () => {
+                    if (gen !== switchGeneration) return;
+                    console.error('视频切换失败');
+                    showError('视频切换失败，请尝试其他剧集');
+                });
+            } else {
+                initPlayerWithTimeout(nextIndex);
+            }
         }
         
         function scrollEpisodeIntoView(idx) {
@@ -2477,12 +2723,19 @@ function formatDate($dateString)
         
         function bindEpisodeClicks() {
             const items = document.querySelectorAll('.episode-item');
-        
+
             items.forEach((item, idx) => {
                 item.addEventListener('click', function() {
-                    highlightEpisode(idx);
-                    scrollEpisodeIntoView(idx);
-                    createArtplayerForEpisode(idx);
+                    if (idx === currentIndex && art) return;
+
+                    const errorMessage = document.getElementById('errorMessage');
+                    if (errorMessage) errorMessage.style.display = 'none';
+
+                    if (art) {
+                        switchEpisodeWithoutDestroy(idx);
+                    } else {
+                        initPlayerWithTimeout(idx);
+                    }
                 });
             });
         }
@@ -2504,10 +2757,14 @@ function formatDate($dateString)
         function enhancedRetry() {
             const retryBtn = document.getElementById('retryButton');
             if (!retryBtn) return;
-        
+
             retryBtn.onclick = function() {
                 console.log('用户点击重试，当前索引:', currentIndex);
-                createArtplayerForEpisode(currentIndex);
+
+                const errorMessage = document.getElementById('errorMessage');
+                if (errorMessage) errorMessage.style.display = 'none';
+
+                initPlayerWithTimeout(currentIndex);
             };
         }
         
@@ -2560,7 +2817,7 @@ function formatDate($dateString)
         function initMobileMenu() {
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const navMenu = document.getElementById('navMenu');
-        
+
             if (mobileMenuBtn && navMenu) {
                 mobileMenuBtn.addEventListener('click', function() {
                     const isNowActive = !navMenu.classList.contains('active');
@@ -2568,7 +2825,7 @@ function formatDate($dateString)
                     const icon = mobileMenuBtn.querySelector('i');
                     icon.className = isNowActive ? 'fas fa-times' : 'fas fa-bars';
                 });
-        
+
                 const navLinks = document.querySelectorAll('.nav-link');
                 navLinks.forEach(link => {
                     link.addEventListener('click', function() {
@@ -2576,7 +2833,7 @@ function formatDate($dateString)
                         mobileMenuBtn.querySelector('i').className = 'fas fa-bars';
                     });
                 });
-        
+
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 768) {
                         navMenu.classList.remove('active');
@@ -2587,6 +2844,36 @@ function formatDate($dateString)
         }
         
         document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const playerRow = document.querySelector('.player-row');
+
+            if (sidebarToggle && playerRow) {
+                sidebarToggle.addEventListener('click', function() {
+                    playerRow.classList.toggle('sidebar-collapsed');
+                    const icon = sidebarToggle.querySelector('i');
+                    if (playerRow.classList.contains('sidebar-collapsed')) {
+                        icon.className = 'fas fa-chevron-left';
+                    } else {
+                        icon.className = 'fas fa-chevron-right';
+                    }
+                });
+            }
+
+            const descToggleBtn = document.getElementById('descToggleBtn');
+            const videoDescription = document.getElementById('videoDescription');
+
+            if (descToggleBtn && videoDescription) {
+                if (videoDescription.scrollHeight <= 60) {
+                    descToggleBtn.style.display = 'none';
+                }
+
+                descToggleBtn.addEventListener('click', function() {
+                    const isExpanded = videoDescription.classList.toggle('expanded');
+                    descToggleBtn.classList.toggle('expanded');
+                    descToggleBtn.querySelector('.toggle-text').textContent = isExpanded ? '收起' : '展开';
+                });
+            }
+
             if (window.location.search.includes('page=history')) {
                 renderWatchHistory();
                 document.getElementById('clearHistoryBtn').addEventListener('click', function() {
@@ -2597,15 +2884,16 @@ function formatDate($dateString)
                 });
             }
         
-            if (window.currentVideoInfo) {
-                WatchHistory.add(window.currentVideoInfo);
-            }
-        
             console.log('=== 播放器初始化开始 ===');
             console.log('API Key 配置状态:', apiKeyConfigured);
         
             initThemeToggle();
             initMobileMenu();
+        
+            <?php if (!empty($showPasswordModal)): ?>
+            console.log('密码验证模态框已显示，跳过播放器初始化');
+            return;
+            <?php endif; ?>
         
             episodes = readEpisodesFromDOM();
             console.log('剧集数据:', episodes);
@@ -2616,17 +2904,23 @@ function formatDate($dateString)
         
             if (episodes && episodes.length > 0) {
                 console.log(`找到 ${episodes.length} 个剧集，准备播放`);
-                
+
                 const historyIndex = restoreFromHistory();
                 const startIndex = historyIndex !== null ? historyIndex : 0;
-                
-                console.log(`从第 ${startIndex + 1} 集开始播放`, 
+
+                console.log(`从第 ${startIndex + 1} 集开始播放`,
                     historyIndex !== null ? '(从观看记录恢复)' : '(默认从第一集开始)');
-                
-                createArtplayerForEpisode(startIndex);
+
+                if (window.currentVideoInfo && episodes[startIndex]) {
+                    window.currentVideoInfo.current_episode = episodes[startIndex].title;
+                    window.currentVideoInfo.current_episode_index = startIndex;
+                    WatchHistory.add(window.currentVideoInfo);
+                }
+
+                initPlayerWithTimeout(startIndex, true);
             } else {
                 console.error('未找到可播放的剧集');
-                showError('未找到可播放的剧集，请返回搜索页面重新搜索');
+                showError('未找到可播放的剧集，请尝试其他剧集或刷新页面');
             }
         
             console.log('=== 播放器初始化完成 ===');
