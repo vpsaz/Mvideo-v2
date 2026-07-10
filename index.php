@@ -226,6 +226,7 @@ function formatDate($dateString)
             background-image: url(), url(https://pic1.imgdb.cn/item/6812a7ae58cb8da5c8d5cbab.png);
             background-position: right bottom, left top;
             background-repeat: no-repeat, repeat;
+            overflow-x: hidden;
         }
 
         ::-webkit-scrollbar {
@@ -268,6 +269,7 @@ function formatDate($dateString)
 
         .container.search-home {
             min-height: calc(100vh - 110px);
+            min-height: calc(100dvh - 110px);
             padding: 25px;
         }
 
@@ -1176,6 +1178,7 @@ function formatDate($dateString)
             align-items: center;
             justify-content: center;
             min-height: calc(100vh - 120px);
+            min-height: calc(100dvh - 120px);
             padding: 40px 20px;
         }
 
@@ -2060,9 +2063,7 @@ function formatDate($dateString)
                     'index' => $index
                 ];
             }, array_keys($details['play_url']), $details['play_url']), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) ?>;
-            console.log('PHP生成的剧集数据:', window.episodesData);
             window.apiKeyConfigured = <?php echo $apiKeyConfigured ? 'true' : 'false'; ?>;
-            console.log('API Key 配置状态:', window.apiKeyConfigured);
         </script>
         <script src="https://baiapi.cn/js-lib/Mvideo_v2/SharedViewing.js"></script> <?php endif; ?> <?php else: ?>
         <div class="error-page">
@@ -2110,7 +2111,6 @@ function formatDate($dateString)
                 const countdownEl = document.getElementById('countdown');
                 
                 if (!modal || !closeBtn || !countdownEl) {
-                    console.log('公告弹窗元素未找到');
                     return;
                 }
                 
@@ -2165,7 +2165,6 @@ function formatDate($dateString)
                     const history = localStorage.getItem(this.STORAGE_KEY);
                     return history ? JSON.parse(history) : [];
                 } catch (error) {
-                    console.error('读取观看记录失败:', error);
                     return [];
                 }
             },
@@ -2193,7 +2192,6 @@ function formatDate($dateString)
                     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
                     return true;
                 } catch (error) {
-                    console.error('保存观看记录失败:', error);
                     return false;
                 }
             },
@@ -2205,7 +2203,6 @@ function formatDate($dateString)
                     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
                     return true;
                 } catch (error) {
-                    console.error('删除观看记录失败:', error);
                     return false;
                 }
             },
@@ -2215,7 +2212,6 @@ function formatDate($dateString)
                     localStorage.removeItem(this.STORAGE_KEY);
                     return true;
                 } catch (error) {
-                    console.error('清空观看记录失败:', error);
                     return false;
                 }
             },
@@ -2243,22 +2239,18 @@ function formatDate($dateString)
         
         function restoreFromHistory() {
             if (!window.currentVideoInfo || !episodes || episodes.length === 0) {
-                console.log('恢复条件不满足');
                 return null;
             }
             
             const videoHistory = WatchHistory.getVideoHistory(window.currentVideoInfo.vod_id);
             if (!videoHistory) {
-                console.log('未找到观看记录');
                 return null;
             }
             
-            console.log('从观看记录恢复:', videoHistory);
             
             if (videoHistory.current_episode_index !== undefined && 
                 videoHistory.current_episode_index >= 0 && 
                 videoHistory.current_episode_index < episodes.length) {
-                console.log(`从索引恢复: 第${videoHistory.current_episode_index + 1}集`);
                 return videoHistory.current_episode_index;
             }
             
@@ -2267,12 +2259,10 @@ function formatDate($dateString)
                     ep.title === videoHistory.current_episode
                 );
                 if (historyEpisodeIndex >= 0) {
-                    console.log(`从标题恢复: 第${historyEpisodeIndex + 1}集`);
                     return historyEpisodeIndex;
                 }
             }
             
-            console.log('无法从记录恢复，使用默认第一集');
             return null;
         }
         
@@ -2352,7 +2342,6 @@ function formatDate($dateString)
         let playerReady = false;
         
         function playM3u8(video, url, art) {
-            console.log('使用HLS播放m3u8:', url);
             if (window.Hls && Hls.isSupported()) {
                 if (art.hls) art.hls.destroy();
                 const hls = new Hls({
@@ -2365,14 +2354,11 @@ function formatDate($dateString)
                 art.hls = hls;
         
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    console.log('HLS视频加载成功');
                     video.play().catch(e => {
-                        console.log('自动播放被阻止:', e);
                     });
                 });
         
                 hls.on(Hls.Events.ERROR, function(event, data) {
-                    console.error('HLS错误:', data);
                     if (data.fatal) {
                         switch (data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
@@ -2399,7 +2385,6 @@ function formatDate($dateString)
         
         function showError(message) {
             if (playerReady && message.includes('初始化失败')) {
-                console.warn('播放器已就绪，跳过初始化错误提示:', message);
                 return;
             }
 
@@ -2413,7 +2398,6 @@ function formatDate($dateString)
             if (errorDetails) errorDetails.textContent = message;
             if (errorMessage) errorMessage.style.display = 'block';
 
-            console.error('播放错误:', message);
         }
 
         let playerLoadTimeout = null;
@@ -2426,7 +2410,6 @@ function formatDate($dateString)
             if (loadingSpinner) loadingSpinner.style.display = 'block';
 
             playerLoadTimeout = setTimeout(() => {
-                console.error('播放器加载超时');
                 showError('视频加载超时，请检查网络连接或尝试切换其他源');
             }, seconds * 1000);
         }
@@ -2444,14 +2427,12 @@ function formatDate($dateString)
             startLoadTimeout(30);
 
             if (typeof createArtplayerForEpisode === 'undefined') {
-                console.warn('播放器JS未加载完成，等待中...');
                 let jsRetryCount = 0;
                 const jsMaxRetries = 40;
                 const jsRetryInterval = setInterval(() => {
                     jsRetryCount++;
                     if (typeof createArtplayerForEpisode !== 'undefined') {
                         clearInterval(jsRetryInterval);
-                        console.log('播放器JS已加载完成，开始初始化');
                         createArtplayerForEpisode(episodeIndex);
                         monitorPlayerInitialization();
                     } else if (jsRetryCount >= jsMaxRetries) {
@@ -2474,16 +2455,12 @@ function formatDate($dateString)
 
                 if (art) {
                     clearInterval(checkInterval);
-                    console.log(`播放器实例在第 ${(checkCount * 300) / 1000} 秒创建成功`);
                     setupPlayerErrorHandling();
-                    console.log('播放器错误处理已绑定');
                 } else if (checkCount >= maxChecks) {
                     clearInterval(checkInterval);
-                    console.error('播放器实例创建超时');
                     if (!playerReady) {
                         showError('播放器初始化失败，请检查网络或刷新页面重试');
                     } else {
-                        console.warn('播放器已就绪，跳过超时错误提示');
                     }
                 }
             }, 300);
@@ -2493,7 +2470,6 @@ function formatDate($dateString)
             if (!art) return;
 
             art.on('error', (error) => {
-                console.error('播放器错误:', error);
                 showError('视频播放出错，请尝试重试或切换其他剧集');
             });
 
@@ -2502,7 +2478,6 @@ function formatDate($dateString)
                 playerReady = true;
                 const errorMessage = document.getElementById('errorMessage');
                 if (errorMessage) errorMessage.style.display = 'none';
-                console.log('视频加载成功，播放器已就绪，清除超时计时器和错误提示');
             });
 
             art.on('play', () => {
@@ -2510,7 +2485,6 @@ function formatDate($dateString)
                 playerReady = true;
                 const errorMessage = document.getElementById('errorMessage');
                 if (errorMessage) errorMessage.style.display = 'none';
-                console.log('视频开始播放，播放器已就绪');
             });
 
             art.on('ready', () => {
@@ -2518,7 +2492,6 @@ function formatDate($dateString)
                 playerReady = true;
                 const errorMessage = document.getElementById('errorMessage');
                 if (errorMessage) errorMessage.style.display = 'none';
-                console.log('播放器ready事件触发，已就绪');
             });
 
             const sidebarToggle = document.getElementById('sidebarToggle');
@@ -2578,21 +2551,17 @@ function formatDate($dateString)
                         art.destroy(false);
                     }
                 } catch (e) {
-                    console.warn('销毁旧播放器时出错:', e);
                 }
                 art = null;
             }
         
-            console.log('播放器界面已重置');
         }
         
         function readEpisodesFromDOM() {
             if (window.episodesData && window.episodesData.length > 0) {
-        console.log('使用PHP生成的剧集数据，数量:', window.episodesData.length);
         return window.episodesData;
             }
             
-            console.error('未找到剧集数据');
             return [];
         }
         
@@ -2602,14 +2571,11 @@ function formatDate($dateString)
             art.off('video:ended');
             
             art.on('video:ended', () => {
-                console.log('视频结束事件触发，当前索引:', currentIndex, '总集数:', episodes.length);
                 
                 if (currentIndex >= episodes.length - 1) {
-                    console.log('已经是最后一集，不自动切换');
                     return;
                 }
                 
-                console.log('视频播放结束，自动切换到下一集');
                 switchToNextEpisode(currentIndex + 1);
             });
         }
@@ -2654,7 +2620,6 @@ function formatDate($dateString)
                     const params = new URLSearchParams({ url: finalUrl, type: 'json' });
                     const response = await fetch(`./api-proxy.php?${params}`);
                     if (gen !== switchGeneration) {
-                        console.log(`第${nextIndex}集切换被更新请求取代，跳过`);
                         return;
                     }
                     if (response.ok) {
@@ -2664,7 +2629,6 @@ function formatDate($dateString)
                         }
                     }
                 } catch (e) {
-                    console.warn('API处理失败，使用原始URL:', e);
                 }
             }
 
@@ -2677,7 +2641,6 @@ function formatDate($dateString)
                     art.video.load();
                     art.once('video:canplay', () => {
                         if (gen !== switchGeneration) return;
-                        console.log('HLS视频切换成功:', ep.title);
                         clearLoadTimeout();
                         art.play().catch(() => {});
                     });
@@ -2685,14 +2648,12 @@ function formatDate($dateString)
                     art.switchUrl(finalUrl, ep.title);
                     art.once('video:canplay', () => {
                         if (gen !== switchGeneration) return;
-                        console.log('视频切换成功:', ep.title);
                         clearLoadTimeout();
                         art.play().catch(() => {});
                     });
                 }
                 art.once('error', () => {
                     if (gen !== switchGeneration) return;
-                    console.error('视频切换失败');
                     showError('视频切换失败，请尝试其他剧集');
                 });
             } else {
@@ -2759,7 +2720,6 @@ function formatDate($dateString)
             if (!retryBtn) return;
 
             retryBtn.onclick = function() {
-                console.log('用户点击重试，当前索引:', currentIndex);
 
                 const errorMessage = document.getElementById('errorMessage');
                 if (errorMessage) errorMessage.style.display = 'none';
@@ -2884,32 +2844,24 @@ function formatDate($dateString)
                 });
             }
         
-            console.log('=== 播放器初始化开始 ===');
-            console.log('API Key 配置状态:', apiKeyConfigured);
         
             initThemeToggle();
             initMobileMenu();
         
             <?php if (!empty($showPasswordModal)): ?>
-            console.log('密码验证模态框已显示，跳过播放器初始化');
             return;
             <?php endif; ?>
         
             episodes = readEpisodesFromDOM();
-            console.log('剧集数据:', episodes);
-            console.log('剧集总数:', episodes ? episodes.length : 0);
         
             bindEpisodeClicks();
             enhancedRetry();
         
             if (episodes && episodes.length > 0) {
-                console.log(`找到 ${episodes.length} 个剧集，准备播放`);
 
                 const historyIndex = restoreFromHistory();
                 const startIndex = historyIndex !== null ? historyIndex : 0;
 
-                console.log(`从第 ${startIndex + 1} 集开始播放`,
-                    historyIndex !== null ? '(从观看记录恢复)' : '(默认从第一集开始)');
 
                 if (window.currentVideoInfo && episodes[startIndex]) {
                     window.currentVideoInfo.current_episode = episodes[startIndex].title;
@@ -2919,11 +2871,9 @@ function formatDate($dateString)
 
                 initPlayerWithTimeout(startIndex, true);
             } else {
-                console.error('未找到可播放的剧集');
                 showError('未找到可播放的剧集，请尝试其他剧集或刷新页面');
             }
         
-            console.log('=== 播放器初始化完成 ===');
         });
             
         (function() {
@@ -2937,7 +2887,6 @@ function formatDate($dateString)
             ].map(id => document.getElementById(id));
         
             if (!customPlayBtn || !customPlayModal) {
-        console.error('自定义播放功能：核心元素未找到！');
         return;
             }
         
