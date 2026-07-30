@@ -28,8 +28,10 @@ if (isset($_POST['save']) && isset($_SESSION['admin_logged_in'])) {
     $conf['qq_group_number'] = $_POST['qq_group_number'];
     $conf['m_accent_color'] = $_POST['m_accent_color'];
     $conf['m_accent_hover'] = $_POST['m_accent_hover'];
+    $conf['m_accent_text'] = $_POST['m_accent_text'];
     $conf['a_accent_color'] = $_POST['a_accent_color'];
     $conf['a_accent_hover'] = $_POST['a_accent_hover'];
+    $conf['a_accent_text'] = $_POST['a_accent_text'];
     $conf['y-day'] = $_POST['y-day'];
     $conf['disclaimers'] = $_POST['disclaimers'];
     $conf['admin_password'] = $_POST['admin_password'];
@@ -322,32 +324,46 @@ if (!isset($_SESSION['admin_logged_in'])) {
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div>
+                        <div style="min-width:0">
                             <label class="block text-sm font-medium text-gray-700 mb-1">明亮主题主色</label>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-2 min-w-0">
                                 <input type="color" name="m_accent_color" value="<?php echo htmlspecialchars($conf['m_accent_color']); ?>" class="form-input h-10 w-16 p-1 rounded-lg focus:outline-none">
-                                <input type="text" name="m_accent_color" value="<?php echo htmlspecialchars($conf['m_accent_color']); ?>" class="form-input flex-1 px-4 py-2 rounded-lg focus:outline-none">
+                                <input type="text" name="m_accent_color" value="<?php echo htmlspecialchars($conf['m_accent_color']); ?>" class="form-input flex-1 min-w-0 px-4 py-2 rounded-lg focus:outline-none">
                             </div>
                         </div>
-                        <div>
+                        <div style="min-width:0">
                             <label class="block text-sm font-medium text-gray-700 mb-1">明亮主题悬停色</label>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-2 min-w-0">
                                 <input type="color" name="m_accent_hover" value="<?php echo htmlspecialchars($conf['m_accent_hover']); ?>" class="form-input h-10 w-16 p-1 rounded-lg focus:outline-none">
-                                <input type="text" name="m_accent_hover" value="<?php echo htmlspecialchars($conf['m_accent_hover']); ?>" class="form-input flex-1 px-4 py-2 rounded-lg focus:outline-none">
+                                <input type="text" name="m_accent_hover" value="<?php echo htmlspecialchars($conf['m_accent_hover']); ?>" class="form-input flex-1 min-w-0 px-4 py-2 rounded-lg focus:outline-none">
                             </div>
                         </div>
-                        <div>
+                        <div style="min-width:0">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">明亮主题文字色</label>
+                            <div class="flex items-center space-x-2 min-w-0">
+                                <input type="color" name="m_accent_text" value="<?php echo htmlspecialchars($conf['m_accent_text'] ?? '#ffffff'); ?>" class="form-input h-10 w-16 p-1 rounded-lg focus:outline-none">
+                                <input type="text" name="m_accent_text" value="<?php echo htmlspecialchars($conf['m_accent_text'] ?? '#ffffff'); ?>" class="form-input flex-1 min-w-0 px-4 py-2 rounded-lg focus:outline-none">
+                            </div>
+                        </div>
+                        <div style="min-width:0">
                             <label class="block text-sm font-medium text-gray-700 mb-1">暗黑主题主色</label>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-2 min-w-0">
                                 <input type="color" name="a_accent_color" value="<?php echo htmlspecialchars($conf['a_accent_color']); ?>" class="form-input h-10 w-16 p-1 rounded-lg focus:outline-none">
-                                <input type="text" name="a_accent_color" value="<?php echo htmlspecialchars($conf['a_accent_color']); ?>" class="form-input flex-1 px-4 py-2 rounded-lg focus:outline-none">
+                                <input type="text" name="a_accent_color" value="<?php echo htmlspecialchars($conf['a_accent_color']); ?>" class="form-input flex-1 min-w-0 px-4 py-2 rounded-lg focus:outline-none">
                             </div>
                         </div>
-                        <div>
+                        <div style="min-width:0">
                             <label class="block text-sm font-medium text-gray-700 mb-1">暗黑主题悬停色</label>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-2 min-w-0">
                                 <input type="color" name="a_accent_hover" value="<?php echo htmlspecialchars($conf['a_accent_hover']); ?>" class="form-input h-10 w-16 p-1 rounded-lg focus:outline-none">
-                                <input type="text" name="a_accent_hover" value="<?php echo htmlspecialchars($conf['a_accent_hover']); ?>" class="form-input flex-1 px-4 py-2 rounded-lg focus:outline-none">
+                                <input type="text" name="a_accent_hover" value="<?php echo htmlspecialchars($conf['a_accent_hover']); ?>" class="form-input flex-1 min-w-0 px-4 py-2 rounded-lg focus:outline-none">
+                            </div>
+                        </div>
+                        <div style="min-width:0">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">暗黑主题文字色</label>
+                            <div class="flex items-center space-x-2 min-w-0">
+                                <input type="color" name="a_accent_text" value="<?php echo htmlspecialchars($conf['a_accent_text'] ?? '#ffffff'); ?>" class="form-input h-10 w-16 p-1 rounded-lg focus:outline-none">
+                                <input type="text" name="a_accent_text" value="<?php echo htmlspecialchars($conf['a_accent_text'] ?? '#ffffff'); ?>" class="form-input flex-1 min-w-0 px-4 py-2 rounded-lg focus:outline-none">
                             </div>
                         </div>
                     </div>
@@ -355,7 +371,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">广告过滤API密钥</label>
                         <div class="flex items-center">
-                            <input type="text" name="baiapi_key" value="<?php echo htmlspecialchars($conf['baiapi_key']); ?>" class="form-input flex-1 px-4 py-2 rounded-lg focus:outline-none">
+                            <input type="text" name="baiapi_key" value="<?php echo htmlspecialchars($conf['baiapi_key']); ?>" class="form-input flex-1 min-w-0 px-4 py-2 rounded-lg focus:outline-none">
                             <a href="https://baiapi.cn/api_doc.php?id=35" target="_blank" class="ml-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200"><i class="fas fa-external-link-alt mr-1"></i>文档</a>
                         </div>
                     </div>
