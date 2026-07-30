@@ -6,7 +6,7 @@
 
 $u=strtolower($_SERVER['HTTP_USER_AGENT']??'');
 if(strpos($u,'micromessenger')!==false||(strpos($u,'qq/')!==false&&!strpos($u,'mqqbrowser/'))){
-    header('Location:https://cn.bing.com/search?q=https://vpsaz.top/qita/ysss');exit;
+    header('Location:https://feishu.doubao.com/docx/MDCAdmHDDoyC6DxVwqocj80Anpc');exit;
 }
 
 header('Content-Type: text/html; charset=utf-8');
@@ -188,6 +188,7 @@ function formatDate($dateString)
             --border-color: #e2e8f0;
             --accent-color: <?= $conf['m_accent_color'] ?>;
             --accent-hover: <?= $conf['m_accent_hover'] ?>;
+            --accent-text: <?= $conf['m_accent_text'] ?? '#fff' ?>;
             --secondary-color: #718096;
             --hover-color: #edf2f7;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -202,6 +203,7 @@ function formatDate($dateString)
             --border-color: #333333;
             --accent-color: <?= $conf['a_accent_color'] ?>;
             --accent-hover: <?= $conf['a_accent_hover'] ?>;
+            --accent-text: <?= $conf['a_accent_text'] ?? '#fff' ?>;
             --secondary-color: #aaaaaa;
             --hover-color: #2a2a2a;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
@@ -312,7 +314,7 @@ function formatDate($dateString)
         }
 
         [data-theme="dark"] .search-logo i {
-            filter: drop-shadow(0 4px 12px rgba(255, 71, 87, 0.3));
+            filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--accent-color) 30%, transparent));
         }
 
         .search-logo h1 {
@@ -367,11 +369,11 @@ function formatDate($dateString)
         .search-input:focus {
             outline: none;
             border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.12);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 12%, transparent);
         }
 
         [data-theme="dark"] .search-input:focus {
-            box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.15);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 15%, transparent);
         }
 
         .search-section.has-results .search-input:focus {
@@ -420,7 +422,7 @@ function formatDate($dateString)
             border: none;
             border-radius: 12px;
             padding: 0 24px;
-            color: white;
+            color: var(--accent-text);
             font-size: 15px;
             cursor: pointer;
             display: flex;
@@ -604,7 +606,7 @@ function formatDate($dateString)
 
         .play-btn {
             background: var(--accent-color);
-            color: white;
+            color: var(--accent-text);
             border: none;
             padding: 6px 12px;
             border-radius: 4px;
@@ -646,7 +648,7 @@ function formatDate($dateString)
             padding-left: 6px;
             margin-top: -23px;
             cursor: pointer;
-            transition: right 0.2s ease;
+            transition: right 0.25s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -665,7 +667,9 @@ function formatDate($dateString)
         }
 
         .player-row.sidebar-collapsed .episodes-section {
-            display: none;
+            transform: translateX(100%);
+            visibility: hidden;
+            pointer-events: none;
         }
 
         .video-container {
@@ -674,7 +678,7 @@ function formatDate($dateString)
             box-sizing: border-box;
             height: 100%;
             margin-right: 360px;
-            transition: margin-right 0.2s ease;
+            transition: margin-right 0.25s ease;
         }
 
         .video-player {
@@ -706,6 +710,7 @@ function formatDate($dateString)
             overflow-y: auto;
             overflow-x: hidden;
             padding-right: 0;
+            transition: transform 0.25s ease, visibility 0s;
         }
 
         .episodes-section::-webkit-scrollbar {
@@ -734,12 +739,28 @@ function formatDate($dateString)
         }
 
         .sidebar-title {
+            display: flex;
+            align-items: baseline;
             font-size: 18px;
             font-weight: 600;
             color: var(--text-color);
             margin-bottom: 8px;
             line-height: 1.4;
             padding-right: 6px;
+            min-width: 0;
+        }
+
+        .sidebar-title .title-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex-shrink: 1;
+            min-width: 0;
+        }
+
+        .sidebar-title .episode-tag {
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .sidebar-desc-wrapper {
@@ -757,37 +778,36 @@ function formatDate($dateString)
             -webkit-line-clamp: 3;
             overflow: hidden;
             text-overflow: ellipsis;
-            transition: max-height 0.3s ease;
         }
 
         .sidebar-desc.expanded {
             -webkit-line-clamp: unset;
-            max-height: 500px;
         }
 
         .desc-toggle-btn {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            padding: 6px 12px;
-            margin-top: 8px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            gap: 3px;
+            padding: 4px 8px;
+            margin-top: 6px;
+            background: var(--hover-color);
+            border: none;
+            border-radius: 4px;
             color: var(--secondary-color);
-            font-size: 12px;
+            font-size: 11px;
+            opacity: 0.7;
             cursor: pointer;
             transition: all 0.2s;
         }
 
         .desc-toggle-btn:hover {
-            background: var(--hover-color);
-            border-color: var(--accent-color);
+            opacity: 1;
             color: var(--accent-color);
+            background: var(--hover-color);
         }
 
         .desc-toggle-btn i {
-            font-size: 10px;
+            font-size: 9px;
             transition: transform 0.3s;
         }
 
@@ -796,15 +816,16 @@ function formatDate($dateString)
         }
 
         .episodes-header {
-            padding: 0 20px 0 20px;
+            padding: 16px 20px 6px;
             flex-shrink: 0;
-            border-bottom: 1px solid var(--border-color);
         }
 
         .section-title {
-            font-size: 14px;
-            padding: 12px 0;
-            color: var(--text-color);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--secondary-color);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -814,11 +835,14 @@ function formatDate($dateString)
         .section-title span {
             font-size: 12px;
             color: var(--secondary-color);
+            font-weight: 400;
+            letter-spacing: 0;
+            text-transform: none;
         }
 
         .episodes-container {
             padding: 15px 20px;
-            flex-shrink: 0;
+            flex: 1;
         }
 
         .episodes-list {
@@ -831,23 +855,46 @@ function formatDate($dateString)
 
         .episode-item {
             background: var(--bg-color);
-            border-radius: 4px;
-            padding: 10px 8px;
+            border-radius: 6px;
+            padding: 12px 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             text-align: center;
-            border: 1px solid var(--border-color);
+            border: none;
+            position: relative;
+            overflow: hidden;
         }
 
         .episode-item:hover {
             background: var(--hover-color);
-            border-color: var(--accent-color);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-color) 20%, transparent); }
+            50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 0%, transparent); }
         }
 
         .episode-item.active {
+            background: color-mix(in srgb, var(--accent-color) 10%, var(--bg-color));
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .episode-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            height: 24px;
+            width: 3px;
             background: var(--accent-color);
-            color: #fff;
-            border-color: var(--accent-color);
+            border-radius: 0 2px 2px 0;
+            transform: translateY(-50%);
+            animation: bar-play 1.2s ease-in-out infinite;
+        }
+
+        @keyframes bar-play {
+            0%, 100% { height: 14px; }
+            50% { height: 28px; }
         }
 
         .episode-title {
@@ -856,10 +903,12 @@ function formatDate($dateString)
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            transition: color 0.2s;
         }
 
         .episode-item.active .episode-title {
-            color: #fff;
+            color: var(--accent-color);
+            font-weight: 600;
         }
         
         .episode-meta {
@@ -1070,7 +1119,7 @@ function formatDate($dateString)
         
         .retry-btn {
             background: var(--accent-color);
-            color: white;
+            color: var(--accent-text);
             border: none;
             padding: 10px 20px;
             border-radius: 4px;
@@ -1149,7 +1198,7 @@ function formatDate($dateString)
 
         .password-submit {
             background: var(--accent-color);
-            color: white;
+            color: var(--accent-text);
             border: none;
             padding: 12px;
             border-radius: 8px;
@@ -1234,7 +1283,7 @@ function formatDate($dateString)
 
         .retry-link {
             background: var(--accent-color);
-            color: white;
+            color: var(--accent-text);
         }
 
         .retry-link:hover {
@@ -1244,12 +1293,11 @@ function formatDate($dateString)
         .home-link {
             background: var(--bg-color);
             color: var(--text-color);
-            border: 1px solid var(--border-color);
+            border: none;
         }
 
         .home-link:hover {
             background: var(--hover-color);
-            border-color: var(--accent-color);
         }
 
         @media (max-width: 480px) {
@@ -1282,7 +1330,9 @@ function formatDate($dateString)
             }
 
             .player-row.sidebar-collapsed .episodes-section {
-                display: flex;
+                transform: none;
+                visibility: visible;
+                pointer-events: auto;
             }
 
             .player-row.sidebar-collapsed .video-container {
@@ -1293,16 +1343,20 @@ function formatDate($dateString)
                 position: relative;
                 top: 0;
                 height: auto;
+                display: flex;
+                flex-direction: column;
+                min-height: calc(100dvh - 61px);
                 background: var(--bg-color);
             }
 
             .video-container {
                 margin-right: 0;
                 position: relative;
-                height: 0;
-                padding-bottom: 56.25%;
+                aspect-ratio: 16 / 9;
+                height: auto;
                 background: #000;
                 border-radius: 0;
+                flex-shrink: 0;
             }
 
             .video-player {
@@ -1318,7 +1372,7 @@ function formatDate($dateString)
                 top: 0;
                 right: 0;
                 width: 100%;
-                height: auto;
+                flex: 1;
                 border-radius: 0;
             }
 
@@ -1327,11 +1381,18 @@ function formatDate($dateString)
             }
 
             .episodes-header {
-                padding: 0 15px;
+                padding: 16px 15px 6px;
             }
 
             .episodes-container {
                 padding: 15px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .episodes-list {
+                flex: 1;
+                align-content: flex-start;
             }
         }
 
@@ -1393,6 +1454,13 @@ function formatDate($dateString)
         .nav-link.active {
             color: var(--accent-color);
         }
+
+        .nav-link svg.nav-icon {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+            margin-top: -2px;
+        }
         
         .nav-actions {
             display: flex;
@@ -1403,7 +1471,7 @@ function formatDate($dateString)
         .theme-toggle-nav,
         .mobile-menu-btn {
             background: var(--bg-color);
-            border: 1px solid var(--border-color);
+            border: none;
             border-radius: 6px;
             width: 36px;
             height: 36px;
@@ -1418,7 +1486,6 @@ function formatDate($dateString)
         .theme-toggle-nav:hover,
         .mobile-menu-btn:hover {
             background: var(--hover-color);
-            border-color: var(--accent-color);
         }
         
         .mobile-menu-btn {
@@ -1456,7 +1523,7 @@ function formatDate($dateString)
             }
 
             .episode-item {
-                padding: 8px 6px;
+                padding: 11px 6px;
             }
 
             .episode-title {
@@ -1522,16 +1589,19 @@ function formatDate($dateString)
                 border-left: 3px solid var(--accent-color);
             }
 
-            .nav-link i {
+            .nav-link i,
+            .nav-link svg.nav-icon {
                 width: 18px;
-                text-align: center;
-                font-size: 14px;
+                height: 18px;
+                vertical-align: middle;
                 color: var(--secondary-color);
                 transition: color 0.2s;
             }
 
             .nav-link:hover i,
-            .nav-link.active i {
+            .nav-link:hover svg.nav-icon,
+            .nav-link.active i,
+            .nav-link.active svg.nav-icon {
                 color: var(--accent-color);
             }
 
@@ -1630,11 +1700,11 @@ function formatDate($dateString)
 
         .clear-history-btn:hover {
             background: var(--hover-color);
-            color: #e53e3e;
+            color: var(--accent-color);
         }
 
         [data-theme="dark"] .clear-history-btn:hover {
-            color: #ff4757;
+            color: var(--accent-color);
         }
 
         .history-list {
@@ -1787,7 +1857,7 @@ function formatDate($dateString)
             width: 36px;
             height: 36px;
             border-radius: 8px;
-            border: 1px solid var(--border-color);
+            border: none;
             background: var(--bg-color);
             color: var(--secondary-color);
             cursor: pointer;
@@ -1800,19 +1870,16 @@ function formatDate($dateString)
 
         .history-action-btn.play-btn:hover {
             background: var(--accent-color);
-            color: #fff;
-            border-color: var(--accent-color);
+            color: var(--accent-text);
         }
 
         .history-action-btn.delete-btn:hover {
-            background: #e53e3e;
-            color: #fff;
-            border-color: #e53e3e;
+            background: var(--accent-color);
+            color: var(--accent-text);
         }
 
         [data-theme="dark"] .history-action-btn.delete-btn:hover {
-            background: #ff4757;
-            border-color: #ff4757;
+            background: var(--accent-color);
         }
 
         .history-empty {
@@ -1921,7 +1988,7 @@ function formatDate($dateString)
             </h3>
             <div style="margin-bottom: 20px; line-height: 1.6; color: var(--text-color);"><?= $conf['disclaimers'] ?></div>
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button id="closeNoticeBtn" style="background: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; opacity: 0.5; pointer-events: none; transition: all 0.2s;"> 关闭 (<span id="countdown">5</span>s) </button>
+                <button id="closeNoticeBtn" style="background: var(--accent-color); color: var(--accent-text); border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; opacity: 0.5; pointer-events: none; transition: all 0.2s;"> 关闭 (<span id="countdown">5</span>s) </button>
             </div>
         </div>
     </div>
@@ -1931,16 +1998,16 @@ function formatDate($dateString)
                 <b><span class="brand-accent">M</span>video</b>
             </a>
             <div class="nav-menu" id="navMenu">
-                <a href="./" class="nav-link <?= !$isHistoryPage ? 'active' : '' ?>"><i class="fas fa-home"></i> 首页</a>
-                <a href="?page=history" class="nav-link <?= $isHistoryPage ? 'active' : '' ?>"><i class="fas fa-history"></i> 观看记录</a>
-                <a href="javascript:void(0)" class="nav-link" id="customPlayBtn"><i class="fas fa-play-circle"></i> 自定义播放</a> <?php if ($passwordVerified): ?> <a href="?logout=1" class="nav-link"><i class="fas fa-sign-out-alt"></i> 退出验证</a> <?php endif; ?>
+                <a href="./" class="nav-link <?= !$isHistoryPage ? 'active' : '' ?>"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> 首页</a>
+                <a href="?page=history" class="nav-link <?= $isHistoryPage ? 'active' : '' ?>"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 观看记录</a>
+                <a href="javascript:void(0)" class="nav-link" id="customPlayBtn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> 自由播放</a> <?php if ($passwordVerified): ?> <a href="?logout=1" class="nav-link"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> 退出验证</a> <?php endif; ?>
             </div>
             <div class="nav-actions">
                 <button class="theme-toggle-nav" id="themeToggle">
-                    <i class="fas fa-moon"></i>
+                    <span id="themeIcon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
                 </button>
                 <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <i class="fas fa-bars"></i>
+                    <span id="menuIcon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>
                 </button>
             </div>
         </div>
@@ -1952,7 +2019,7 @@ function formatDate($dateString)
                 <i class="fas fa-times"></i>
             </button>
             <h3 style="font-size: 20px; margin-bottom: 20px; color: var(--text-color); display: flex; align-items: center; gap: 10px; padding-right: 40px;">
-                <i class="fas fa-play-circle"></i> 自定义
+                自定义
             </h3>
             <div style="display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap;">
                 <input type="text" id="customPlayUrl" placeholder="请输入视频播放地址（支持m3u8/mp4等）" class="search-input" style="flex: 1;">
@@ -2034,7 +2101,7 @@ function formatDate($dateString)
             </div>
             <div class="episodes-section">
                 <div class="sidebar-header">
-                    <h1 class="sidebar-title" id="videoTitle" data-original-title="<?= htmlspecialchars($details['name'] ?? '') ?>"><?= htmlspecialchars($details['name'] ?? '加载中...') ?></h1>
+                    <h1 class="sidebar-title" id="videoTitle" data-original-title="<?= htmlspecialchars($details['name'] ?? '') ?>"><span class="title-text"><?= htmlspecialchars($details['name'] ?? '加载中...') ?></span></h1>
                     <div class="sidebar-desc-wrapper">
                         <div class="sidebar-desc" id="videoDescription"><?= htmlspecialchars($details['content'] ?? '正在获取视频信息...') ?></div>
                         <button class="desc-toggle-btn" id="descToggleBtn">
@@ -2044,7 +2111,7 @@ function formatDate($dateString)
                     </div>
                 </div>
                 <div class="episodes-header">
-                    <h2 class="section-title">选集 <span id="episodesCount">共 <?= !empty($details['play_url']) ? count($details['play_url']) : 0 ?> 集</span></h2>
+                    <h2 class="section-title"><span style="display: inline-flex; align-items: center; gap: 4px; line-height: 1;"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; display: block;"><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>选集</span> <span id="episodesCount">共 <?= !empty($details['play_url']) ? count($details['play_url']) : 0 ?> 集</span></h2>
                 </div>
                 <div class="episodes-container">
                     <div class="episodes-list" id="episodesList"> <?php if (!empty($details['play_url'])): ?> <?php foreach ($details['play_url'] as $index => $episode): ?> <div class="episode-item">
@@ -2709,9 +2776,13 @@ function formatDate($dateString)
         
             if (titleEl) {
                 const originalTitle = titleEl.getAttribute('data-original-title');
-                titleEl.innerHTML = originalTitle ?
-                    `${originalTitle} <span style="color: var(--accent-color); font-size: 0.9em; margin-left: 10px;"> ${ep.title}</span>` :
+                const fullText = originalTitle ?
+                    `${originalTitle} ${ep.title}` :
                     ep.title;
+                titleEl.innerHTML = originalTitle ?
+                    `<span class="title-text">${originalTitle}</span><span class="episode-tag" style="color: var(--accent-color); font-size: 0.8em; margin-left: 6px;">${ep.title}</span>` :
+                    ep.title;
+                titleEl.setAttribute('title', fullText);
             }
         }
         
@@ -2731,27 +2802,21 @@ function formatDate($dateString)
         function initThemeToggle() {
             const themeToggle = document.getElementById('themeToggle');
             const htmlElement = document.documentElement;
-            const themeIcon = themeToggle.querySelector('i');
+            const themeIcon = document.getElementById('themeIcon');
         
-            if (themeToggle) {
+            const moonSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+            const sunSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+        
+            if (themeToggle && themeIcon) {
                 const currentTheme = htmlElement.getAttribute('data-theme');
-                if (currentTheme === 'dark') {
-                    themeIcon.className = 'fas fa-sun';
-                } else {
-                    themeIcon.className = 'fas fa-moon';
-                }
+                themeIcon.innerHTML = currentTheme === 'dark' ? sunSvg : moonSvg;
         
                 function toggleTheme() {
                     const currentTheme = htmlElement.getAttribute('data-theme');
                     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         
                     htmlElement.setAttribute('data-theme', newTheme);
-        
-                    if (newTheme === 'dark') {
-                        themeIcon.className = 'fas fa-sun';
-                    } else {
-                        themeIcon.className = 'fas fa-moon';
-                    }
+                    themeIcon.innerHTML = newTheme === 'dark' ? sunSvg : moonSvg;
         
                     document.cookie = `theme_preference=${newTheme}; path=/; max-age=${60*60*24*30}`;
                 }
@@ -2763,12 +2828,7 @@ function formatDate($dateString)
                     if (!document.cookie.includes('theme_preference')) {
                         const newTheme = e.matches ? 'dark' : 'light';
                         htmlElement.setAttribute('data-theme', newTheme);
-        
-                        if (newTheme === 'dark') {
-                            themeIcon.className = 'fas fa-sun';
-                        } else {
-                            themeIcon.className = 'fas fa-moon';
-                        }
+                        themeIcon.innerHTML = newTheme === 'dark' ? sunSvg : moonSvg;
                     }
                 });
             }
@@ -2777,27 +2837,30 @@ function formatDate($dateString)
         function initMobileMenu() {
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             const navMenu = document.getElementById('navMenu');
+            const menuIcon = document.getElementById('menuIcon');
+        
+            const barsSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+            const timesSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
-            if (mobileMenuBtn && navMenu) {
+            if (mobileMenuBtn && navMenu && menuIcon) {
                 mobileMenuBtn.addEventListener('click', function() {
                     const isNowActive = !navMenu.classList.contains('active');
                     navMenu.classList.toggle('active', isNowActive);
-                    const icon = mobileMenuBtn.querySelector('i');
-                    icon.className = isNowActive ? 'fas fa-times' : 'fas fa-bars';
+                    menuIcon.innerHTML = isNowActive ? timesSvg : barsSvg;
                 });
 
                 const navLinks = document.querySelectorAll('.nav-link');
                 navLinks.forEach(link => {
                     link.addEventListener('click', function() {
                         navMenu.classList.remove('active');
-                        mobileMenuBtn.querySelector('i').className = 'fas fa-bars';
+                        menuIcon.innerHTML = barsSvg;
                     });
                 });
 
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 768) {
                         navMenu.classList.remove('active');
-                        mobileMenuBtn.querySelector('i').className = 'fas fa-bars';
+                        menuIcon.innerHTML = barsSvg;
                     }
                 });
             }
@@ -2823,7 +2886,7 @@ function formatDate($dateString)
             const videoDescription = document.getElementById('videoDescription');
 
             if (descToggleBtn && videoDescription) {
-                if (videoDescription.scrollHeight <= 60) {
+                if (videoDescription.scrollHeight <= videoDescription.clientHeight) {
                     descToggleBtn.style.display = 'none';
                 }
 
