@@ -16,7 +16,7 @@ return array (
   'a_accent_text' => '#1a1a1a',
   'y-day' => '2025-11-16',
   'disclaimers' => '本站所有内容均来自互联网，本站不会保存、复制或传播任何视频文件，也不对本站上的任何内容负法律责任。如果本站部分内容侵犯您的版权请告知，在必要证明文件下我们第一时间撤除。',
-  'admin_password' => 'akaxz',
+  'admin_password' => '123456',
   'protected_keywords' => array (
   0 => '色情',
   1 => '伦理',
