@@ -4,7 +4,7 @@ return array (
   'site_description' => '校长影视搜索',
   'site_keywords' => '影视搜索,电影,电视剧,网剧',
   'source_count' => '14',
-  'baiapi_key' => '',
+  'baiapi_key' => '92606df8ab1c5dfb5e48a6fbe3b185a4',
   'qq' => '1213235865',
   'qq_group' => 'https://qm.qq.com/q/oYCsXm6JWM',
   'qq_group_number' => '662429292',
