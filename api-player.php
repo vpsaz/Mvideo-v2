@@ -66,7 +66,6 @@ if (!$has_video_extension) {
     exit;
 }
 
-$safe_url = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="zh">
@@ -103,7 +102,7 @@ $safe_url = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
 <body>
     <div id="video"></div>
     <script>
-        const originalUrl = '<?php echo $safe_url; ?>';
+        const originalUrl = <?php echo json_encode($url, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         
         function isM3U8Url(url) {
             const lowerUrl = url.toLowerCase();
