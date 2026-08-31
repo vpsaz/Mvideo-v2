@@ -4,13 +4,24 @@
  * @github    https://github.com/vpsaz/Mvideo-v2
  */
 
+session_set_cookie_params([
+    'httponly' => true,
+    'samesite' => 'Lax',
+    'secure' => !empty($_SERVER['HTTPS'])
+]);
 session_start();
 
 $config_file = __DIR__ . '/../config/config.php';
 $conf = include($config_file);
 
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 if (isset($_POST['login'])) {
-    if ($_POST['password'] === $conf['admin_password']) {
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $error = '会话校验失败，请刷新页面重试。';
+    } elseif ($_POST['password'] === $conf['admin_password']) {
         $_SESSION['admin_logged_in'] = true;
     } else {
         $error = '密码错误，请重试。';
@@ -18,7 +29,10 @@ if (isset($_POST['login'])) {
 }
 
 if (isset($_POST['save']) && isset($_SESSION['admin_logged_in'])) {
-    $conf['site_title'] = $_POST['site_title'];
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        $error = '会话校验失败，请刷新页面后重试。';
+    } else {
+        $conf['site_title'] = $_POST['site_title'];
     $conf['site_description'] = $_POST['site_description'];
     $conf['site_keywords'] = $_POST['site_keywords'];
     $conf['source_count'] = $_POST['source_count'];
@@ -41,11 +55,7 @@ if (isset($_POST['save']) && isset($_SESSION['admin_logged_in'])) {
 
     $export = "<?php\nreturn array (\n";
     foreach ($conf as $key => $value) {
-        if (is_array($value)) {
-            $export .= "  '$key' => " . var_export($value, true) . ",\n";
-        } else {
-            $export .= "  '$key' => '" . addslashes($value) . "',\n";
-        }
+        $export .= "  '$key' => " . var_export($value, true) . ",\n";
     }
     $export .= ");\n?>";
     
@@ -54,6 +64,7 @@ if (isset($_POST['save']) && isset($_SESSION['admin_logged_in'])) {
     $_SESSION['save_message'] = '配置已保存！';
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
+    }
 }
 
 $message = isset($_SESSION['save_message']) ? $_SESSION['save_message'] : '';
@@ -161,6 +172,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
         </div>
         
         <form method="post" class="space-y-6">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
             <div>
                 <div class="relative">
                     <input type="password" name="password" placeholder="请输入密码" class="input-field w-full px-5 py-3 rounded-lg text-gray-700 focus:outline-none">
@@ -288,6 +300,7 @@ if (!isset($_SESSION['admin_logged_in'])) {
             <div class="card p-6 mb-6">
                 <h3 class="text-lg font-semibold mb-4 flex items-center"><i class="fas fa-cog mr-2 text-blue-500"></i>系统设置</h3>
                 <form method="post" class="space-y-5">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
