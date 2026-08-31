@@ -10,6 +10,11 @@ if(strpos($u,'micromessenger')!==false||(strpos($u,'qq/')!==false&&!strpos($u,'m
 }
 
 header('Content-Type: text/html; charset=utf-8');
+session_set_cookie_params([
+    'httponly' => true,
+    'samesite' => 'Lax',
+    'secure' => !empty($_SERVER['HTTPS'])
+]);
 session_start(); 
 $config_file = __DIR__ . '/config/config.php';
 $conf = include($config_file);
@@ -93,6 +98,7 @@ $results = [];
 $details = [];
 $searchTerm = $_GET['wd'] ?? '';
 $source = $_GET['y'] ?? '1';
+$source = preg_match('/^\d+$/', $source) ? $source : '1';
 $selectedId = $_GET['id'] ?? '';
 $isHistoryPage = isset($_GET['page']) && $_GET['page'] === 'history';
 
@@ -180,6 +186,15 @@ function formatDate($dateString)
     <script src="https://baiapi.cn/js-lib/Mvideo/artplayer.min.js"></script>
     <script src="https://baiapi.cn/js-lib/Mvideo/artplayer-plugin-ads.min.js"></script>
     <script src="https://baiapi.cn/js-lib/Mvideo_v2/player.js"></script>
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('video_sidebar_collapsed') === '1' && window.innerWidth > 1024) {
+                    document.documentElement.setAttribute('data-sidebar-collapsed', '1');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <style>
         :root {
             --bg-color: #f5f7fa;
@@ -658,15 +673,15 @@ function formatDate($dateString)
             color: var(--accent-color);
         }
 
-        .player-row.sidebar-collapsed .sidebar-toggle {
+        [data-sidebar-collapsed] .player-row .sidebar-toggle {
             right: 0;
         }
 
-        .player-row.sidebar-collapsed .video-container {
+        [data-sidebar-collapsed] .player-row .video-container {
             margin-right: 0;
         }
 
-        .player-row.sidebar-collapsed .episodes-section {
+        [data-sidebar-collapsed] .player-row .episodes-section {
             transform: translateX(100%);
             visibility: hidden;
             pointer-events: none;
@@ -1329,13 +1344,13 @@ function formatDate($dateString)
                 display: none;
             }
 
-            .player-row.sidebar-collapsed .episodes-section {
+            [data-sidebar-collapsed] .player-row .episodes-section {
                 transform: none;
                 visibility: visible;
                 pointer-events: auto;
             }
 
-            .player-row.sidebar-collapsed .video-container {
+            [data-sidebar-collapsed] .player-row .video-container {
                 margin-right: 0;
             }
 
@@ -2084,7 +2099,7 @@ function formatDate($dateString)
                     <i class="fas fa-film"></i>
                     <p>未找到相关影片</p>
                 </div> <?php endif; ?> </div>
-        </div> <?php endif; ?> <?php else: ?> <?php if (!empty($details) && !empty($details['play_url'])): ?> <div class="player-row">
+        </div> <?php endif; ?> <?php else: ?> <?php if (!empty($details) && !empty($details['play_url']) && empty($showPasswordModal)): ?> <div class="player-row">
             <div class="sidebar-toggle" id="sidebarToggle">
                 <i class="fas fa-chevron-right"></i>
             </div>
@@ -2406,6 +2421,7 @@ function formatDate($dateString)
         let currentRequestController = null;
         let apiKeyConfigured = window.apiKeyConfigured || false;
         let switchGeneration = 0;
+        let switchErrorHandler = null;
         let playerReady = false;
         
         function playM3u8(video, url, art) {
@@ -2719,16 +2735,20 @@ function formatDate($dateString)
                         art.play().catch(() => {});
                     });
                 }
-                art.once('error', () => {
+                if (switchErrorHandler) art.off('error', switchErrorHandler);
+                switchErrorHandler = () => {
                     if (gen !== switchGeneration) return;
                     showError('视频切换失败，请尝试其他剧集');
-                });
+                };
+                art.once('error', switchErrorHandler);
             } else {
                 initPlayerWithTimeout(nextIndex);
             }
         }
         
         function scrollEpisodeIntoView(idx) {
+            // 侧边栏收起时列表不可见，跳过滚动，避免 scrollIntoView 触发外层视口/页面滚动
+            if (document.documentElement.hasAttribute('data-sidebar-collapsed')) return;
             const items = document.querySelectorAll('.episode-item');
             if (items && items[idx]) {
                 items[idx].scrollIntoView({
@@ -2768,6 +2788,12 @@ function formatDate($dateString)
             });
         }
         
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function(c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
         function updateUIForCurrentIndex(idx) {
             if (!episodes || !episodes[idx]) return;
         
@@ -2780,8 +2806,8 @@ function formatDate($dateString)
                     `${originalTitle} ${ep.title}` :
                     ep.title;
                 titleEl.innerHTML = originalTitle ?
-                    `<span class="title-text">${originalTitle}</span><span class="episode-tag" style="color: var(--accent-color); font-size: 0.8em; margin-left: 6px;">${ep.title}</span>` :
-                    ep.title;
+                    `<span class="title-text">${escapeHtml(originalTitle)}</span><span class="episode-tag" style="color: var(--accent-color); font-size: 0.8em; margin-left: 6px;">${escapeHtml(ep.title)}</span>` :
+                    escapeHtml(ep.title);
                 titleEl.setAttribute('title', fullText);
             }
         }
@@ -2869,16 +2895,28 @@ function formatDate($dateString)
         document.addEventListener('DOMContentLoaded', function() {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const playerRow = document.querySelector('.player-row');
+            const SIDEBAR_KEY = 'video_sidebar_collapsed';
+            const htmlEl = document.documentElement;
 
             if (sidebarToggle && playerRow) {
-                sidebarToggle.addEventListener('click', function() {
-                    playerRow.classList.toggle('sidebar-collapsed');
+                const isMobile = window.innerWidth <= 1024;
+
+                if (localStorage.getItem(SIDEBAR_KEY) === '1' && !isMobile) {
+                    htmlEl.setAttribute('data-sidebar-collapsed', '1');
                     const icon = sidebarToggle.querySelector('i');
-                    if (playerRow.classList.contains('sidebar-collapsed')) {
-                        icon.className = 'fas fa-chevron-left';
+                    icon.className = 'fas fa-chevron-left';
+                }
+
+                sidebarToggle.addEventListener('click', function() {
+                    const collapsed = htmlEl.hasAttribute('data-sidebar-collapsed');
+                    if (collapsed) {
+                        htmlEl.removeAttribute('data-sidebar-collapsed');
                     } else {
-                        icon.className = 'fas fa-chevron-right';
+                        htmlEl.setAttribute('data-sidebar-collapsed', '1');
                     }
+                    const icon = sidebarToggle.querySelector('i');
+                    icon.className = collapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+                    localStorage.setItem(SIDEBAR_KEY, collapsed ? '0' : '1');
                 });
             }
 
